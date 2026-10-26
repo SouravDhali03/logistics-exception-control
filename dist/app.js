@@ -36,11 +36,19 @@ let selectedId='EXC-2481';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const priorityLabel=p=>({P1:'Critical',P2:'High',P3:'Medium'}[p]||'Medium');
+const transportMode=id=>({
+ 'EXC-2481':['ship','⚓','Ocean freight'],
+ 'EXC-2479':['plane','✈','Air freight'],
+ 'EXC-2476':['plane','✈','Air freight'],
+ 'EXC-2471':['ship','⚓','Ocean freight'],
+ 'EXC-2468':['truck','▣','Road freight'],
+ 'EXC-2464':['truck','▣','Road freight']
+}[id]||['truck','▣','Road freight']);
 function saveCases(){try{localStorage.setItem('tiger-exceptions-v1',JSON.stringify(exceptions));}catch(_){toast('Could not save locally; this change lasts until the page closes.')}}
 function renderExceptions(){
  const visible=exceptions.filter(e=>currentFilter==='all'||(currentFilter==='critical'&&e.p==='P1')||(currentFilter==='mine'&&e.owner==='You')).sort((a,b)=>a.p.localeCompare(b.p));
  if(visible.length&&!visible.some(e=>e.id===selectedId)) selectedId=visible[0].id;
- $('#exception-list').innerHTML=visible.length?`<div class="exception-table" role="table" aria-label="Prioritized exceptions"><div class="exception-table-head" role="row"><span>ID</span><span>Priority</span><span>Exception</span><span>Route</span><span>Impact</span><span>Confidence</span><span>Owner</span><span>Actions</span></div>${visible.map(e=>`<button class="exception-row ${e.id===selectedId?'active':''}" role="row" data-id="${escapeHtml(e.id)}"><span class="id-cell">${escapeHtml(e.id)}</span><span class="priority ${e.p.toLowerCase()}"><span class="priority-dot"></span>${e.p} · ${priorityLabel(e.p)}</span><span class="exception-name"><strong>${escapeHtml(e.title)}</strong></span><span class="route-cell">${escapeHtml(e.route)}</span><span class="impact-cell">${escapeHtml(e.detail)}</span><span class="uncertainty-cell">${escapeHtml(e.uncertainty)}</span><span class="owner-cell">${escapeHtml(e.owner)}</span><span class="row-action" aria-label="More actions"><i class="hgi-stroke hgi-more-horizontal" aria-hidden="true"></i></span></button>`).join('')}</div>`:'<p class="empty-queue">No exceptions match this filter.</p>';
+ $('#exception-list').innerHTML=visible.length?`<div class="exception-table" role="table" aria-label="Prioritized exceptions"><div class="exception-table-head" role="row"><span>ID</span><span>Priority</span><span>Exception</span><span>Pickup</span><span>Drop off</span><span>Impact</span><span>Confidence</span><span>Owner</span><span>Actions</span></div>${visible.map(e=>{const places=e.route.split(' → '),mode=transportMode(e.id);return `<button class="exception-row ${e.id===selectedId?'active':''}" role="row" data-id="${escapeHtml(e.id)}"><span class="id-cell">${escapeHtml(e.id)}</span><span class="priority ${e.p.toLowerCase()}"><span class="priority-dot"></span>${e.p} · ${priorityLabel(e.p)}</span><span class="exception-name"><strong>${escapeHtml(e.title)}</strong></span><span class="location-cell pickup-cell"><span class="mode-icon ${mode[0]}" title="${mode[2]}">${mode[1]}</span><span>${escapeHtml(places[0]||e.route)}</span></span><span class="location-cell dropoff-cell">${escapeHtml(places[1]||'—')}</span><span class="impact-cell">${escapeHtml(e.detail)}</span><span class="uncertainty-cell">${escapeHtml(e.uncertainty)}</span><span class="owner-cell">${escapeHtml(e.owner)}</span><span class="row-action" aria-label="More actions"><i class="hgi-stroke hgi-more-horizontal" aria-hidden="true"></i></span></button>`}).join('')}</div>`:'<p class="empty-queue">No exceptions match this filter.</p>';
  $$('.exception-row').forEach(btn=>btn.onclick=()=>selectException(btn.dataset.id,true));
  const counts={all:exceptions.length,critical:exceptions.filter(e=>e.p==='P1').length,mine:exceptions.filter(e=>e.owner==='You').length};
  $$('.chip').forEach(b=>{b.textContent=({all:'All',critical:'Critical',mine:'Mine'}[b.dataset.filter])+' '+counts[b.dataset.filter]});
