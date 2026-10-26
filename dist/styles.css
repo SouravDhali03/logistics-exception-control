@@ -100,3 +100,10 @@ main{max-width:none!important;width:100%!important;margin:0!important;padding:0 
 @media(max-width:820px){.exception-table{min-width:1100px}.exception-table-head,.exception-row{grid-template-columns:78px 102px 200px 132px 132px 160px 108px 76px 46px}.location-cell{font-size:13px}.mode-icon{flex-basis:26px;width:26px;height:26px}}
 /* Tab strip and table header polish. */
 .welcome-hero{margin-bottom:0!important}.hero-tabs{background:var(--canvas)!important;border-bottom:1px solid var(--hairline)!important}.hero-tabs .top-tab{color:var(--body)!important}.hero-tabs .top-tab:hover{color:var(--ink)!important;background:var(--canvas-soft)!important}.hero-tabs .top-tab.active{color:var(--primary)!important;border-bottom-color:var(--primary)!important}.hero-tabs .top-tab span{color:#fff!important;background:var(--primary)!important}.hero-notifications{border-radius:50%!important}.exception-table-head{height:56px!important}
+/* Consistent 14px navigation and operational table typography. */
+.hero-tabs .top-tab,
+.exception-name strong,
+.location-cell,
+.impact-cell,
+.uncertainty-cell,
+.owner-cell{font-size:14px!important}
