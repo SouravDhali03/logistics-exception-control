@@ -123,4 +123,5 @@ $$('.chip').forEach(button=>button.onclick=()=>setFilter(button.dataset.filter))
 $$('.filter-option').forEach(button=>button.onclick=()=>setFilter(button.dataset.filter));
 document.addEventListener('click',()=>{$('#filter-popover').classList.add('hidden');$('#filter-toggle').setAttribute('aria-expanded','false');closeCaseMenu()});
 $$('.nav-item').forEach(n=>n.onclick=()=>{ $$('.nav-item').forEach(x=>x.classList.remove('active'));n.classList.add('active');if(n.dataset.view!=='inbox')toast(`${n.textContent.trim()} view is represented in the active case prototype`);});
+$$('.top-tab').forEach(n=>n.onclick=()=>{ $$('.top-tab').forEach(x=>x.classList.remove('active'));n.classList.add('active');if(n.dataset.view!=='inbox')toast(`${n.textContent.trim()} view is represented in the active case prototype`);});
 renderExceptions();renderEvidence();renderTimeline();renderAudit();
