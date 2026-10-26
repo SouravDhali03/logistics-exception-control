@@ -1,4 +1,4 @@
-const exceptions=[
+let exceptions=[
  {id:'EXC-2481',p:'P1',title:'Port congestion threatens delivery',route:'Rotterdam → Chicago',detail:'31h predicted delay · $42k at risk',time:'2m',owner:'You',uncertainty:'Likely · 82%'},
  {id:'EXC-2479',p:'P2',title:'Temperature excursion detected',route:'Singapore → Frankfurt',detail:'8.4°C for 22 min · Pharma',time:'11m',owner:'Mina',uncertainty:'Confirmed'},
  {id:'EXC-2476',p:'P2',title:'Customs documents incomplete',route:'Dhaka → Toronto',detail:'Commercial invoice mismatch',time:'26m',owner:'You',uncertainty:'Possible · 64%'},
@@ -6,6 +6,7 @@ const exceptions=[
  {id:'EXC-2468',p:'P3',title:'Warehouse handoff delayed',route:'Hamburg → Prague',detail:'Pickup missed by 46 min',time:'2h',owner:'Nadia',uncertainty:'Likely · 71%'},
  {id:'EXC-2464',p:'P3',title:'Delivery appointment at risk',route:'Antwerp → Lyon',detail:'Driver hours limit approaching',time:'3h',owner:'You',uncertainty:'Possible · 58%'}
 ];
+try { const saved=JSON.parse(localStorage.getItem('tiger-exceptions-v1')); if(Array.isArray(saved)&&saved.length) exceptions=saved; } catch (_) {}
 const evidence=[
  ['CR','Carrier event feed','Discharge estimate changed 14:20 → 09:15 (+19h)','Verified · 2m'],
  ['TM','Terminal milestone','Crane outage recorded at berth 4','Verified · 18m'],
@@ -30,12 +31,22 @@ let audit=[
 ];
 let selectedAction='expedite';
 let currentFilter='all';
+let selectedId='EXC-2481';
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const priorityLabel=p=>({P1:'Critical',P2:'High',P3:'Medium'}[p]||'Medium');
+function saveCases(){try{localStorage.setItem('tiger-exceptions-v1',JSON.stringify(exceptions));}catch(_){toast('Could not save locally; this change lasts until the page closes.')}}
 function renderExceptions(){
- const visible=exceptions.filter(e=>currentFilter==='all'||(currentFilter==='critical'&&e.p==='P1')||(currentFilter==='mine'&&e.owner==='You'));
- $('#exception-list').innerHTML=visible.map((e,i)=>`<button class="exception-item ${i===0?'active':''}" data-id="${e.id}"><div class="item-top"><span class="priority ${e.p.toLowerCase()}">${e.p}</span><time>${e.time}</time></div><strong>${e.title}</strong><p>${e.route}<br>${e.detail}</p><div class="item-bottom"><span>${e.uncertainty}</span><span class="mini-owner">${e.owner}</span></div></button>`).join('');
+ const visible=exceptions.filter(e=>currentFilter==='all'||(currentFilter==='critical'&&e.p==='P1')||(currentFilter==='mine'&&e.owner==='You')).sort((a,b)=>a.p.localeCompare(b.p));
+ if(visible.length&&!visible.some(e=>e.id===selectedId)) selectedId=visible[0].id;
+ $('#exception-list').innerHTML=visible.map(e=>`<button class="exception-item ${e.id===selectedId?'active':''}" data-id="${escapeHtml(e.id)}"><div class="item-top"><span class="priority ${e.p.toLowerCase()}"><span class="priority-dot"></span>${e.p} · ${priorityLabel(e.p)}</span><time>${escapeHtml(e.time)}</time></div><strong>${escapeHtml(e.title)}</strong><p>${escapeHtml(e.route)}<br>${escapeHtml(e.detail)}</p><div class="item-bottom"><span>${escapeHtml(e.uncertainty)}</span><span class="mini-owner">${escapeHtml(e.owner)}</span></div></button>`).join('')||'<p class="empty-queue">No exceptions match this filter.</p>';
  $$('.exception-item').forEach(btn=>btn.onclick=()=>selectException(btn.dataset.id));
+ const counts={all:exceptions.length,critical:exceptions.filter(e=>e.p==='P1').length,mine:exceptions.filter(e=>e.owner==='You').length};
+ $$('.chip').forEach(b=>{b.textContent=({all:'All',critical:'Critical',mine:'Mine'}[b.dataset.filter])+' '+counts[b.dataset.filter]});
+ $$('.filter-option').forEach(b=>{b.querySelector('b').textContent=counts[b.dataset.filter]});
+ $('#open-count').textContent=counts.all; $('#critical-count').textContent=counts.critical; $('.nav-item[data-view="inbox"] .nav-count').textContent=counts.all;
+ if(visible.length)selectException(selectedId);
 }
 function setFilter(filter){
  currentFilter=filter;
@@ -45,13 +56,16 @@ function setFilter(filter){
  const popover=$('#filter-popover');
  popover.classList.add('hidden');
  $('#filter-toggle').setAttribute('aria-expanded','false');
- const label={all:'Showing all 6 exceptions',critical:'Showing 1 critical exception',mine:'Showing 3 exceptions assigned to you'}[filter];
- toast(label);
+ toast(`Showing ${$('#exception-list').querySelectorAll('.exception-item').length} exceptions`);
 }
 function selectException(id){
- const e=exceptions.find(x=>x.id===id); $$('.exception-item').forEach(x=>x.classList.toggle('active',x.dataset.id===id));
- $('#case-title').textContent=e.title; $('#case-meta').textContent=`${e.id} · ${e.route}`; $('#priority-badge').textContent=`${e.p} ${e.p==='P1'?'Critical':'Priority'}`; $('#uncertainty-badge').textContent=e.uncertainty;
- if(id!=='EXC-2481'){ $('#what-happened').textContent=e.detail; $('#likely-cause').textContent='Evidence analysis is still in progress.'; $('#business-impact').textContent=`Route: ${e.route}. Priority review required.`; $('#missing-data').textContent='Latest partner confirmation.'; }
+ const e=exceptions.find(x=>x.id===id); if(!e)return; selectedId=id; $$('.exception-item').forEach(x=>x.classList.toggle('active',x.dataset.id===id));
+ const sample=id==='EXC-2481';
+ $('#case-title').textContent=e.title; $('#case-meta').textContent=`${e.id} · ${e.route}`; $('#priority-badge').textContent=`${e.p} ${priorityLabel(e.p)}`; $('#priority-badge').className='badge '+({P1:'critical',P2:'uncertainty',P3:'owner'}[e.p]); $('#uncertainty-badge').textContent=e.uncertainty; $('#owner-badge').textContent=e.owner==='You'?'Assigned to you':`Owner: ${e.owner}`;
+ $('.status-strip').classList.toggle('hidden',!sample); $('.actions-section').classList.toggle('hidden',!sample); $('.approval-bar').classList.toggle('hidden',!sample); $('.evidence-row').classList.toggle('hidden',!sample);
+ $$('.case-tabs button:not([data-tab="decision"])').forEach(b=>b.classList.toggle('hidden',!sample)); switchTab('decision');
+ $('#assessment-title').textContent=sample?'Delivery commitment is likely to be missed':'Assessment needs review'; $('#assessment-confidence').textContent=sample?'82% confidence':'Unverified';
+ if(!sample){ $('#what-happened').textContent=e.detail; $('#likely-cause').textContent='Not yet assessed.'; $('#business-impact').textContent=`${e.route} · ${priorityLabel(e.p)} priority`; $('#missing-data').textContent='Supporting evidence and partner confirmation.'; }
  else{ $('#what-happened').textContent='Vessel discharge moved by 19 hours. The connecting rail slot is now unavailable.'; $('#likely-cause').textContent='Terminal congestion following an unplanned crane outage.'; $('#business-impact').textContent='31h delay · SLA breach likely · $42k order at risk.'; $('#missing-data').textContent='Confirmed terminal gate appointment.'; }
 }
 function renderEvidence(){ $('#evidence-list').innerHTML=evidence.map(x=>`<div class="evidence-item"><div class="source-icon">${x[0]}</div><div><strong>${x[1]}</strong><p>${x[2]}</p></div><span class="source-state">${x[3]}</span></div>`).join(''); }
@@ -70,20 +84,30 @@ function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.remove('hi
 
 $('#approve-action').onclick=()=>{
  const high=selectedAction==='expedite';
- openModal(`<p class="eyebrow">${high?'Higher-risk action':'Action approval'}</p><h2>${labels[selectedAction][0]}</h2><p>${high?'This action creates a new transport commitment and adds $4,850 in cost. Your explicit confirmation is required.':'This action is within your approval authority and can be executed immediately.'}</p><div class="modal-summary"><strong>Authority and prerequisites</strong><p>✓ Approval limit verified<br>✓ Carrier capacity available<br>✓ Duplicate execution check passed<br>✓ Customer notification drafted</p></div>${high?'<label class="confirm-check"><input type="checkbox" id="confirm-risk"> I understand the cost and downstream commitment.</label>':''}<div class="modal-actions"><button class="ghost" id="cancel-approval">Go back</button><button class="primary" id="confirm-action">Confirm and execute</button></div>`);
+ openModal(`<p class="eyebrow">${high?'Higher-risk action':'Action approval'}</p><h2>${labels[selectedAction][0]}</h2><p>${high?'This action creates a new transport commitment and adds $4,850 in cost. Your explicit confirmation is required.':'This action is within your approval authority and can be executed immediately.'}</p><div class="modal-summary"><strong>Authority and prerequisites</strong><div class="check-list"><span><i class="hgi-stroke hgi-checkmark-circle-02" aria-hidden="true"></i>Approval limit verified</span><span><i class="hgi-stroke hgi-checkmark-circle-02" aria-hidden="true"></i>Carrier capacity available</span><span><i class="hgi-stroke hgi-checkmark-circle-02" aria-hidden="true"></i>Duplicate execution check passed</span><span><i class="hgi-stroke hgi-checkmark-circle-02" aria-hidden="true"></i>Customer notification drafted</span></div></div>${high?'<label class="confirm-check"><input type="checkbox" id="confirm-risk"> I understand the cost and downstream commitment.</label>':''}<div class="modal-actions"><button class="ghost" id="cancel-approval">Go back</button><button class="primary" id="confirm-action">Confirm and execute</button></div>`);
  $('#cancel-approval').onclick=closeModal; $('#confirm-action').onclick=()=>{if(high&&!$('#confirm-risk').checked){toast('Confirm the risk acknowledgement first');return} executeAction();};
 };
 function executeAction(){
  $('#modal-content').innerHTML=`<p class="eyebrow">Execution in progress</p><h2>Coordinating approved action</h2><p>Creating the carrier task, reserving capacity and preparing stakeholder updates.</p><div class="progress-track"><i id="execution-progress"></i></div><div id="execution-status">Running prerequisite checks…</div>`;
  requestAnimationFrame(()=>$('#execution-progress').style.width='100%');
- setTimeout(()=>{audit.unshift([new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}),'Approved action executed','user/sourav']);renderAudit();$('#modal-content').innerHTML=`<p class="eyebrow">Execution succeeded</p><h2>Resolution is in progress</h2><p>The dedicated truck request was accepted. Customer and carrier notifications were delivered and monitoring is active.</p><div class="modal-summary"><strong>Next checkpoint</strong><p>Gate appointment confirmation due in 45 minutes. The exception will be re-evaluated when a new event arrives.</p></div><div class="modal-actions"><button class="ghost" id="view-audit">View audit</button><button class="primary" id="finish-execution">Continue monitoring</button></div>`;$('#view-audit').onclick=()=>{closeModal();switchTab('audit')};$('#finish-execution').onclick=()=>{closeModal();toast('Action executed · Monitoring new events')};},1500);
+ setTimeout(()=>{audit.unshift([new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}),'Demo action simulated','user/sourav']);renderAudit();$('#modal-content').innerHTML=`<p class="eyebrow">Demo action completed</p><h2>Resolution is in progress</h2><p>${escapeHtml(labels[selectedAction][0])} was simulated. No carrier request or customer notification was sent.</p><div class="modal-summary"><strong>Example next checkpoint</strong><p>Gate appointment confirmation due in 45 minutes. A real integration would re-evaluate the exception when a new event arrives.</p></div><div class="modal-actions"><button class="ghost" id="view-audit">View audit</button><button class="primary" id="finish-execution">Continue monitoring</button></div>`;$('#view-audit').onclick=()=>{closeModal();switchTab('audit')};$('#finish-execution').onclick=()=>{closeModal();toast('Demo action recorded')};},1500);
 }
 $('#request-info').onclick=()=>openModal(`<p class="eyebrow">Missing information</p><h2>Request terminal gate confirmation</h2><p>The AI can send a structured request to the terminal and carrier. The case will remain open and re-validate automatically when a reply arrives.</p><div class="modal-summary"><strong>Recipients</strong><p>Rotterdam Terminal Operations<br>Ocean carrier control desk</p></div><div class="modal-actions"><button class="ghost" onclick="document.querySelector('#modal-close').click()">Cancel</button><button class="primary" id="send-request">Send request</button></div>`);
-document.addEventListener('click',e=>{if(e.target?.id==='send-request'){closeModal();toast('Information request sent · Response timer started')}});
+document.addEventListener('click',e=>{if(e.target?.id==='send-request'){closeModal();toast('Demo request prepared; no message was sent')}});
 $('#override-ai').onclick=()=>openModal(`<p class="eyebrow">Human override</p><h2>Correct the assessment or action</h2><p>Your correction will be preserved in the audit history and reviewed as a learning candidate after closure.</p><label>Actual cause<textarea style="width:100%;min-height:70px;margin-top:6px;border:1px solid #dce3e7;border-radius:8px;padding:10px">Terminal labor shortage</textarea></label><label style="display:block;margin-top:12px">Preferred action<textarea style="width:100%;min-height:70px;margin-top:6px;border:1px solid #dce3e7;border-radius:8px;padding:10px">Escalate to regional operations before committing cost</textarea></label><div class="modal-actions"><button class="ghost" onclick="document.querySelector('#modal-close').click()">Cancel</button><button class="primary" id="apply-override">Update recommendation</button></div>`);
 document.addEventListener('click',e=>{if(e.target?.id==='apply-override'){audit.unshift([new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}),'Coordinator overrode AI assessment','user/sourav']);renderAudit();closeModal();toast('Override recorded · Recommendation refreshed')}});
 $('#explain-ai').onclick=()=>openModal(`<p class="eyebrow">Reasoning trace</p><h2>Why the delay is likely</h2><p>The model correlated the revised discharge event with the released rail slot and compared the resulting ETA against the customer commitment.</p><div class="modal-summary"><strong>Strongest contributors</strong><p>1. Rail slot unavailable — 41%<br>2. Discharge estimate +19h — 34%<br>3. Historical terminal recovery — 15%<br>4. Remaining signals — 10%</p></div><p><small>Confidence reflects evidence agreement and model reliability for comparable routes. It is not a guarantee.</small></p>`);
-$('#new-exception').onclick=()=>toast('Manual exception creation opened in prototype mode');
+$('#new-exception').onclick=()=>{
+ openModal(`<p class="eyebrow">Manual entry</p><h2>Create an exception</h2><p>Add a shipment issue to the demo inbox. It will be saved in this browser for review.</p><form id="new-case-form" class="case-form"><label>Exception title<input name="title" required maxlength="90" placeholder="e.g. Customs documents missing"></label><div class="form-row"><label>Origin<input name="origin" required maxlength="40" placeholder="e.g. Dhaka"></label><label>Destination<input name="destination" required maxlength="40" placeholder="e.g. Toronto"></label></div><label>What happened?<textarea name="detail" required maxlength="240" placeholder="Describe the issue and what is known so far"></textarea></label><label>Priority<select name="priority"><option value="P1">P1 · Critical</option><option value="P2" selected>P2 · High</option><option value="P3">P3 · Medium</option></select></label><div class="modal-actions"><button class="ghost" type="button" id="cancel-new-case">Cancel</button><button class="primary" type="submit">Create exception</button></div></form>`);
+ $('#cancel-new-case').onclick=closeModal;
+ $('#new-case-form').onsubmit=e=>{e.preventDefault();const data=new FormData(e.currentTarget);const item={id:`EXC-${Date.now().toString().slice(-8)}`,p:data.get('priority'),title:String(data.get('title')).trim(),route:`${String(data.get('origin')).trim()} → ${String(data.get('destination')).trim()}`,detail:String(data.get('detail')).trim(),time:'Now',owner:'You',uncertainty:'Unknown · Unverified',events:['Exception created manually in this browser']};if(!item.title||!item.detail||!String(data.get('origin')).trim()||!String(data.get('destination')).trim()){toast('Complete all fields before creating the exception');return}exceptions.unshift(item);selectedId=item.id;currentFilter='all';$$('.chip,.filter-option').forEach(b=>b.classList.toggle('active',b.dataset.filter==='all'));saveCases();renderExceptions();closeModal();toast('Exception created in your browser');};
+};
+function closeCaseMenu(){$('#case-menu').classList.add('hidden');$('#more-menu').setAttribute('aria-expanded','false')}
+$('#more-menu').onclick=e=>{e.stopPropagation();const open=$('#case-menu').classList.toggle('hidden')===false;$('#more-menu').setAttribute('aria-expanded',String(open))};
+$('#case-menu').onclick=e=>e.stopPropagation();
+$('#assign-case').onclick=()=>{const item=exceptions.find(x=>x.id===selectedId);item.owner='You';(item.events??=[]).unshift('Assigned to you');saveCases();closeCaseMenu();renderExceptions();toast('Exception assigned to you')};
+$('#case-audit').onclick=()=>{const item=exceptions.find(x=>x.id===selectedId);closeCaseMenu();if(item.id==='EXC-2481'){switchTab('audit');return}const events=item.events?.length?item.events:['No recorded actions yet'];openModal(`<p class="eyebrow">Case history</p><h2>Audit history</h2><p>${escapeHtml(item.id)} · ${escapeHtml(item.title)}</p><div class="modal-summary">${events.map(event=>`<p>${escapeHtml(event)}</p>`).join('')}</div><p><small>Demo history is saved only in this browser.</small></p>`)};
+$('#copy-case').onclick=async()=>{closeCaseMenu();try{await navigator.clipboard.writeText(selectedId);toast('Exception ID copied')}catch(_){openModal(`<p class="eyebrow">Exception ID</p><h2>${escapeHtml(selectedId)}</h2><p>Select and copy this ID.</p>`)}};
 $('#notifications').onclick=()=>toast('3 notifications · 1 requires approval');
 $('#filter-toggle').onclick=e=>{
  e.stopPropagation();
@@ -94,6 +118,6 @@ $('#filter-toggle').onclick=e=>{
 $('#filter-popover').onclick=e=>e.stopPropagation();
 $$('.chip').forEach(button=>button.onclick=()=>setFilter(button.dataset.filter));
 $$('.filter-option').forEach(button=>button.onclick=()=>setFilter(button.dataset.filter));
-document.addEventListener('click',()=>{$('#filter-popover').classList.add('hidden');$('#filter-toggle').setAttribute('aria-expanded','false')});
+document.addEventListener('click',()=>{$('#filter-popover').classList.add('hidden');$('#filter-toggle').setAttribute('aria-expanded','false');closeCaseMenu()});
 $$('.nav-item').forEach(n=>n.onclick=()=>{ $$('.nav-item').forEach(x=>x.classList.remove('active'));n.classList.add('active');if(n.dataset.view!=='inbox')toast(`${n.textContent.trim()} view is represented in the active case prototype`);});
 renderExceptions();renderEvidence();renderTimeline();renderAudit();

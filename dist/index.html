@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.hugeicons.com/font/icons.css" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -15,61 +16,61 @@
     <aside class="sidebar">
       <div class="brand"><span class="brand-mark">TC</span><span>Tiger Control</span></div>
       <nav aria-label="Primary">
-        <button class="nav-item active" data-view="inbox"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5h16l-2 12.5H6L4 5.5Z"/><path d="M4.8 14h4l1.4 2h3.6l1.4-2h4"/></svg></span>Exception inbox<span class="nav-count">6</span></button>
-        <button class="nav-item" data-view="monitoring"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="2"/><path d="M12 2v2.5M22 12h-2.5M12 22v-2.5M2 12h2.5"/></svg></span>Live monitoring</button>
-        <button class="nav-item" data-view="decisions"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg></span>Decision history</button>
-        <button class="nav-item" data-view="learning"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 1.5 4.2L18 9l-4.5 1.8L12 15l-1.5-4.2L6 9l4.5-1.8L12 3Z"/><path d="m18.5 15 .8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z"/></svg></span>Learning review<span class="nav-count muted">3</span></button>
-        <button class="nav-item" data-view="audit"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4.5h10v16H7z"/><path d="M9.5 3h5v3h-5zM10 10h4M10 14h4M10 18h3"/></svg></span>Audit log</button>
+        <button class="nav-item active" data-view="inbox"><span class="nav-icon" aria-hidden="true"><i class="hgi-stroke hgi-inbox"></i></span>Exception inbox<span class="nav-count">6</span></button>
+        <button class="nav-item" data-view="monitoring"><span class="nav-icon" aria-hidden="true"><i class="hgi-stroke hgi-activity-01"></i></span>Live monitoring</button>
+        <button class="nav-item" data-view="decisions"><span class="nav-icon" aria-hidden="true"><i class="hgi-stroke hgi-clock-01"></i></span>Decision history</button>
+        <button class="nav-item" data-view="learning"><span class="nav-icon" aria-hidden="true"><i class="hgi-stroke hgi-ai-learning"></i></span>Learning review<span class="nav-count muted">3</span></button>
+        <button class="nav-item" data-view="audit"><span class="nav-icon" aria-hidden="true"><i class="hgi-stroke hgi-clipboard-list"></i></span>Audit log</button>
       </nav>
       <div class="network-card">
         <div class="status-dot"></div>
-        <div><strong>Network healthy</strong><small>24 sources connected</small></div>
+        <div><strong>Demo workspace</strong><small>Sample shipment data</small></div>
       </div>
-      <div class="profile"><div class="avatar">SD</div><div><strong>Sourav</strong><small>Operations coordinator</small></div><button aria-label="Account menu">•••</button></div>
+      <div class="profile"><div class="avatar">SD</div><div><strong>Sourav</strong><small>Operations coordinator</small></div><button aria-label="Account menu"><i class="hgi-stroke hgi-more-horizontal" aria-hidden="true"></i></button></div>
     </aside>
 
     <main>
       <header class="topbar">
-        <div><p class="eyebrow">Operations control tower</p><h1 id="page-title">Exception inbox</h1></div>
-        <div class="top-actions"><div class="live-pill"><span></span>Live</div><button class="icon-button" id="notifications" aria-label="Notifications"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7Z"/><path d="M10 20h4"/></svg><b>3</b></button><button class="primary small" id="new-exception">+ New exception</button></div>
+        <div><p class="eyebrow">Operations control tower · Demo</p><h1 id="page-title">Exception inbox</h1></div>
+        <div class="top-actions"><button class="icon-button" id="notifications" aria-label="Notifications"><i class="hgi-stroke hgi-notification-02" aria-hidden="true"></i><b>3</b></button><button class="primary small" id="new-exception"><i class="hgi-stroke hgi-add-01" aria-hidden="true"></i>New exception</button></div>
       </header>
 
       <section class="kpis" aria-label="Operational summary">
-        <article><span>Open exceptions</span><strong>6</strong><em class="up">2 new</em></article>
-        <article><span>Critical</span><strong>1</strong><em>Needs approval</em></article>
+        <article><span>Open exceptions</span><strong id="open-count">6</strong><em class="up">Sample queue</em></article>
+        <article><span>Critical</span><strong id="critical-count">1</strong><em>Needs attention</em></article>
         <article><span>At-risk value</span><strong>$184k</strong><em>Across 4 shipments</em></article>
         <article><span>Median response</span><strong>8m</strong><em class="down">↓ 18% this week</em></article>
       </section>
 
       <section class="workspace">
         <aside class="queue-panel">
-          <div class="panel-head"><div><h2>Prioritized queue</h2><span>Updated just now</span></div><div class="filter-control"><button class="icon-button" id="filter-toggle" aria-label="Filter exceptions" aria-expanded="false" aria-controls="filter-popover"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg></button><div class="filter-popover hidden" id="filter-popover"><p>Show exceptions</p><button class="filter-option active" data-filter="all"><span>All exceptions</span><b>6</b></button><button class="filter-option" data-filter="critical"><span>Critical only</span><b>1</b></button><button class="filter-option" data-filter="mine"><span>Assigned to me</span><b>3</b></button></div></div></div>
+          <div class="panel-head"><div><h2>Prioritized queue</h2><span>Updated just now</span></div><div class="filter-control"><button class="icon-button" id="filter-toggle" aria-label="Filter exceptions" aria-expanded="false" aria-controls="filter-popover"><i class="hgi-stroke hgi-filter-horizontal" aria-hidden="true"></i></button><div class="filter-popover hidden" id="filter-popover"><p>Show exceptions</p><button class="filter-option active" data-filter="all"><span>All exceptions</span><b>6</b></button><button class="filter-option" data-filter="critical"><span>Critical only</span><b>1</b></button><button class="filter-option" data-filter="mine"><span>Assigned to me</span><b>3</b></button></div></div></div>
           <div class="filters"><button class="chip active" data-filter="all">All 6</button><button class="chip" data-filter="critical">Critical 1</button><button class="chip" data-filter="mine">Mine 3</button></div>
           <div id="exception-list" class="exception-list"></div>
         </aside>
 
         <section class="case-panel" id="case-panel">
           <div class="case-header">
-            <div class="case-title-row"><div><div class="badges"><span class="badge critical" id="priority-badge">P1 Critical</span><span class="badge uncertainty" id="uncertainty-badge">Likely · 82%</span><span class="badge owner">Assigned to you</span></div><h2 id="case-title">Port congestion threatens delivery</h2><p id="case-meta">EXC-2481 · Shipment TGHU 4820193 · Rotterdam → Chicago</p></div><button class="ghost" id="more-menu">•••</button></div>
+            <div class="case-title-row"><div><div class="badges"><span class="badge critical" id="priority-badge">P1 Critical</span><span class="badge uncertainty" id="uncertainty-badge">Likely · 82%</span><span class="badge owner" id="owner-badge">Assigned to you</span></div><h2 id="case-title">Port congestion threatens delivery</h2><p id="case-meta">EXC-2481 · Shipment TGHU 4820193 · Rotterdam → Chicago</p></div><div class="case-actions"><button class="ghost icon-only" id="more-menu" aria-label="More case actions" aria-expanded="false" aria-controls="case-menu"><i class="hgi-stroke hgi-more-horizontal" aria-hidden="true"></i></button><div id="case-menu" class="case-menu hidden"><button id="assign-case"><i class="hgi-stroke hgi-user" aria-hidden="true"></i> Assign to me</button><button id="case-audit"><i class="hgi-stroke hgi-clipboard-list" aria-hidden="true"></i> View audit history</button><button id="copy-case"><i class="hgi-stroke hgi-copy-01" aria-hidden="true"></i> Copy exception ID</button></div></div></div>
             <div class="case-tabs"><button class="active" data-tab="decision">Decision</button><button data-tab="evidence">Evidence <span>7</span></button><button data-tab="timeline">Timeline</button><button data-tab="audit">Audit</button></div>
           </div>
 
           <div class="case-content" id="decision-tab">
-            <section class="status-strip"><div class="ai-spark">✦</div><div><strong>AI assessment updated 2 minutes ago</strong><p>Two new carrier events increased the predicted delay from 18 to 31 hours.</p></div><button class="link-button" id="explain-ai">How was this determined?</button></section>
+            <section class="status-strip"><div class="ai-spark"><i class="hgi-stroke hgi-ai-beautify" aria-hidden="true"></i></div><div><strong>AI assessment updated 2 minutes ago</strong><p>Two new carrier events increased the predicted delay from 18 to 31 hours.</p></div><button class="link-button" id="explain-ai">How was this determined?</button></section>
 
             <section class="decision-card card">
-              <div class="section-title"><div><p class="eyebrow">AI Decision Card</p><h3>Delivery commitment is likely to be missed</h3></div><span class="confidence">82% confidence</span></div>
+              <div class="section-title"><div><p class="eyebrow">01 / Understand the exception</p><h3 id="assessment-title">Delivery commitment is likely to be missed</h3></div><span class="confidence" id="assessment-confidence">82% confidence</span></div>
               <div class="decision-grid">
-                <div><span>What happened</span><p id="what-happened">Vessel discharge moved by 19 hours. The connecting rail slot is now unavailable.</p></div>
-                <div><span>Likely cause</span><p id="likely-cause">Terminal congestion following an unplanned crane outage.</p></div>
-                <div><span>Business impact</span><p id="business-impact">31h delay · SLA breach likely · $42k order at risk.</p></div>
-                <div><span>Missing data</span><p id="missing-data">Confirmed terminal gate appointment.</p></div>
+                <div><span><i class="hgi-stroke hgi-activity-01" aria-hidden="true"></i> What happened</span><p id="what-happened">Vessel discharge moved by 19 hours. The connecting rail slot is now unavailable.</p></div>
+                <div><span><i class="hgi-stroke hgi-search-01" aria-hidden="true"></i> Likely cause</span><p id="likely-cause">Terminal congestion following an unplanned crane outage.</p></div>
+                <div><span><i class="hgi-stroke hgi-alert-circle" aria-hidden="true"></i> Business impact</span><p id="business-impact">31h delay · SLA breach likely · $42k order at risk.</p></div>
+                <div><span><i class="hgi-stroke hgi-file-01" aria-hidden="true"></i> Missing data</span><p id="missing-data">Confirmed terminal gate appointment.</p></div>
               </div>
               <div class="evidence-row"><span>Evidence quality</span><div class="evidence-meter"><i style="width:82%"></i></div><strong>High</strong><button class="link-button" data-tab-open="evidence">View 7 sources →</button></div>
             </section>
 
             <section class="actions-section">
-              <div class="section-title"><div><p class="eyebrow">Resolution options</p><h3>Choose how to protect the delivery</h3></div><button class="ghost" id="request-info">Request more information</button></div>
+              <div class="section-title"><div><p class="eyebrow">02 / Choose a response</p><h3>Choose how to protect the delivery</h3><p class="section-hint">Compare recovery time, cost and risk before approving.</p></div><button class="ghost" id="request-info">Request more information</button></div>
               <div class="action-options" id="action-options">
                 <button class="action-card selected" data-action="expedite" data-risk="high">
                   <div class="action-top"><span class="recommended">Recommended</span><span class="risk high">Higher risk</span></div>
@@ -110,7 +111,7 @@
 
   <div class="modal-backdrop hidden" id="modal-backdrop" role="presentation">
     <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <button class="modal-close" id="modal-close" aria-label="Close">×</button>
+      <button class="modal-close" id="modal-close" aria-label="Close"><i class="hgi-stroke hgi-cancel-01" aria-hidden="true"></i></button>
       <div id="modal-content"></div>
     </section>
   </div>
