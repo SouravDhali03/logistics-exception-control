@@ -40,13 +40,13 @@ function saveCases(){try{localStorage.setItem('tiger-exceptions-v1',JSON.stringi
 function renderExceptions(){
  const visible=exceptions.filter(e=>currentFilter==='all'||(currentFilter==='critical'&&e.p==='P1')||(currentFilter==='mine'&&e.owner==='You')).sort((a,b)=>a.p.localeCompare(b.p));
  if(visible.length&&!visible.some(e=>e.id===selectedId)) selectedId=visible[0].id;
- $('#exception-list').innerHTML=visible.map(e=>`<button class="exception-item ${e.id===selectedId?'active':''}" data-id="${escapeHtml(e.id)}"><div class="item-top"><span class="priority ${e.p.toLowerCase()}"><span class="priority-dot"></span>${e.p} · ${priorityLabel(e.p)}</span><time>${escapeHtml(e.time)}</time></div><strong>${escapeHtml(e.title)}</strong><p>${escapeHtml(e.route)}<br>${escapeHtml(e.detail)}</p><div class="item-bottom"><span>${escapeHtml(e.uncertainty)}</span><span class="mini-owner">${escapeHtml(e.owner)}</span></div></button>`).join('')||'<p class="empty-queue">No exceptions match this filter.</p>';
- $$('.exception-item').forEach(btn=>btn.onclick=()=>selectException(btn.dataset.id));
+ $('#exception-list').innerHTML=visible.length?`<div class="exception-table" role="table" aria-label="Prioritized exceptions"><div class="exception-table-head" role="row"><span>Priority</span><span>Exception</span><span>Route</span><span>Impact</span><span>Confidence</span><span>Owner</span><span>Updated</span></div>${visible.map(e=>`<button class="exception-row ${e.id===selectedId?'active':''}" role="row" data-id="${escapeHtml(e.id)}"><span class="priority ${e.p.toLowerCase()}"><span class="priority-dot"></span>${e.p} · ${priorityLabel(e.p)}</span><span class="exception-name"><strong>${escapeHtml(e.title)}</strong><small>${escapeHtml(e.id)}</small></span><span class="route-cell">${escapeHtml(e.route)}</span><span class="impact-cell">${escapeHtml(e.detail)}</span><span class="uncertainty-cell">${escapeHtml(e.uncertainty)}</span><span class="owner-cell">${escapeHtml(e.owner)}</span><time>${escapeHtml(e.time)}</time></button>`).join('')}</div>`:'<p class="empty-queue">No exceptions match this filter.</p>';
+ $$('.exception-row').forEach(btn=>btn.onclick=()=>selectException(btn.dataset.id,true));
  const counts={all:exceptions.length,critical:exceptions.filter(e=>e.p==='P1').length,mine:exceptions.filter(e=>e.owner==='You').length};
  $$('.chip').forEach(b=>{b.textContent=({all:'All',critical:'Critical',mine:'Mine'}[b.dataset.filter])+' '+counts[b.dataset.filter]});
  $$('.filter-option').forEach(b=>{b.querySelector('b').textContent=counts[b.dataset.filter]});
  $('#open-count').textContent=counts.all; $('#critical-count').textContent=counts.critical; $('.nav-item[data-view="inbox"] .nav-count').textContent=counts.all;
- if(visible.length)selectException(selectedId);
+ if(visible.length)selectException(selectedId,false);
 }
 function setFilter(filter){
  currentFilter=filter;
@@ -58,8 +58,10 @@ function setFilter(filter){
  $('#filter-toggle').setAttribute('aria-expanded','false');
  toast(`Showing ${$('#exception-list').querySelectorAll('.exception-item').length} exceptions`);
 }
-function selectException(id){
+function selectException(id,openDrawer=true){
  const e=exceptions.find(x=>x.id===id); if(!e)return; selectedId=id; $$('.exception-item').forEach(x=>x.classList.toggle('active',x.dataset.id===id));
+ $$('.exception-row').forEach(x=>x.classList.toggle('active',x.dataset.id===id));
+ if(openDrawer)document.body.classList.add('drawer-open');
  const sample=id==='EXC-2481';
  $('#case-title').textContent=e.title; $('#case-meta').textContent=`${e.id} · ${e.route}`; $('#priority-badge').textContent=`${e.p} ${priorityLabel(e.p)}`; $('#priority-badge').className='badge '+({P1:'critical',P2:'uncertainty',P3:'owner'}[e.p]); $('#uncertainty-badge').textContent=e.uncertainty; $('#owner-badge').textContent=e.owner==='You'?'Assigned to you':`Owner: ${e.owner}`;
  $('.status-strip').classList.toggle('hidden',!sample); $('.actions-section').classList.toggle('hidden',!sample); $('.approval-bar').classList.toggle('hidden',!sample); $('.evidence-row').classList.toggle('hidden',!sample);
@@ -80,6 +82,7 @@ $$('.action-card').forEach(card=>card.onclick=()=>{selectedAction=card.dataset.a
 function openModal(html){$('#modal-content').innerHTML=html;$('#modal-backdrop').classList.remove('hidden');}
 function closeModal(){$('#modal-backdrop').classList.add('hidden');}
 $('#modal-close').onclick=closeModal; $('#modal-backdrop').onclick=e=>{if(e.target.id==='modal-backdrop')closeModal()};
+$('#close-drawer').onclick=()=>{document.body.classList.remove('drawer-open');closeCaseMenu()};
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),2800)}
 
 $('#approve-action').onclick=()=>{
