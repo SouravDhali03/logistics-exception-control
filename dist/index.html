@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="AI-assisted shipment exception management with human-controlled decisions." />
+  <title>Logistics Exception Control</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">TC</span><span>Tiger Control</span></div>
+      <nav aria-label="Primary">
+        <button class="nav-item active" data-view="inbox"><span>⌁</span>Exception inbox<span class="nav-count">6</span></button>
+        <button class="nav-item" data-view="monitoring"><span>◉</span>Live monitoring</button>
+        <button class="nav-item" data-view="decisions"><span>◇</span>Decision history</button>
+        <button class="nav-item" data-view="learning"><span>✦</span>Learning review<span class="nav-count muted">3</span></button>
+        <button class="nav-item" data-view="audit"><span>▤</span>Audit log</button>
+      </nav>
+      <div class="network-card">
+        <div class="status-dot"></div>
+        <div><strong>Network healthy</strong><small>24 sources connected</small></div>
+      </div>
+      <div class="profile"><div class="avatar">SD</div><div><strong>Sourav</strong><small>Operations coordinator</small></div><button aria-label="Account menu">•••</button></div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div><p class="eyebrow">Operations control tower</p><h1 id="page-title">Exception inbox</h1></div>
+        <div class="top-actions"><div class="live-pill"><span></span>Live</div><button class="icon-button" aria-label="Notifications">♢<b>3</b></button><button class="primary small" id="new-exception">+ New exception</button></div>
+      </header>
+
+      <section class="kpis" aria-label="Operational summary">
+        <article><span>Open exceptions</span><strong>6</strong><em class="up">2 new</em></article>
+        <article><span>Critical</span><strong>1</strong><em>Needs approval</em></article>
+        <article><span>At-risk value</span><strong>$184k</strong><em>Across 4 shipments</em></article>
+        <article><span>Median response</span><strong>8m</strong><em class="down">↓ 18% this week</em></article>
+      </section>
+
+      <section class="workspace">
+        <aside class="queue-panel">
+          <div class="panel-head"><div><h2>Prioritized queue</h2><span>Updated just now</span></div><button class="icon-button" aria-label="Filter">≡</button></div>
+          <div class="filters"><button class="chip active">All 6</button><button class="chip">Critical 1</button><button class="chip">Mine 3</button></div>
+          <div id="exception-list" class="exception-list"></div>
+        </aside>
+
+        <section class="case-panel" id="case-panel">
+          <div class="case-header">
+            <div class="case-title-row"><div><div class="badges"><span class="badge critical" id="priority-badge">P1 Critical</span><span class="badge uncertainty" id="uncertainty-badge">Likely · 82%</span><span class="badge owner">Assigned to you</span></div><h2 id="case-title">Port congestion threatens delivery</h2><p id="case-meta">EXC-2481 · Shipment TGHU 4820193 · Rotterdam → Chicago</p></div><button class="ghost" id="more-menu">•••</button></div>
+            <div class="case-tabs"><button class="active" data-tab="decision">Decision</button><button data-tab="evidence">Evidence <span>7</span></button><button data-tab="timeline">Timeline</button><button data-tab="audit">Audit</button></div>
+          </div>
+
+          <div class="case-content" id="decision-tab">
+            <section class="status-strip"><div class="ai-spark">✦</div><div><strong>AI assessment updated 2 minutes ago</strong><p>Two new carrier events increased the predicted delay from 18 to 31 hours.</p></div><button class="link-button" id="explain-ai">How was this determined?</button></section>
+
+            <section class="decision-card card">
+              <div class="section-title"><div><p class="eyebrow">AI Decision Card</p><h3>Delivery commitment is likely to be missed</h3></div><span class="confidence">82% confidence</span></div>
+              <div class="decision-grid">
+                <div><span>What happened</span><p id="what-happened">Vessel discharge moved by 19 hours. The connecting rail slot is now unavailable.</p></div>
+                <div><span>Likely cause</span><p id="likely-cause">Terminal congestion following an unplanned crane outage.</p></div>
+                <div><span>Business impact</span><p id="business-impact">31h delay · SLA breach likely · $42k order at risk.</p></div>
+                <div><span>Missing data</span><p id="missing-data">Confirmed terminal gate appointment.</p></div>
+              </div>
+              <div class="evidence-row"><span>Evidence quality</span><div class="evidence-meter"><i style="width:82%"></i></div><strong>High</strong><button class="link-button" data-tab-open="evidence">View 7 sources →</button></div>
+            </section>
+
+            <section class="actions-section">
+              <div class="section-title"><div><p class="eyebrow">Resolution options</p><h3>Choose how to protect the delivery</h3></div><button class="ghost" id="request-info">Request more information</button></div>
+              <div class="action-options" id="action-options">
+                <button class="action-card selected" data-action="expedite" data-risk="high">
+                  <div class="action-top"><span class="recommended">Recommended</span><span class="risk high">Higher risk</span></div>
+                  <strong>Expedite by dedicated truck</strong>
+                  <p>Move container from Rotterdam to Duisburg by road and connect to an earlier rail service.</p>
+                  <div class="action-metrics"><span><b>22h</b> recovered</span><span><b>$4,850</b> added cost</span><span><b>76%</b> SLA saved</span></div>
+                </button>
+                <button class="action-card" data-action="rebook" data-risk="low">
+                  <div class="action-top"><span>Alternative A</span><span class="risk low">Low risk</span></div>
+                  <strong>Rebook next rail departure</strong>
+                  <p>Accept the next confirmed rail slot and proactively update the customer.</p>
+                  <div class="action-metrics"><span><b>8h</b> recovered</span><span><b>$620</b> added cost</span><span><b>42%</b> SLA saved</span></div>
+                </button>
+                <button class="action-card" data-action="hold" data-risk="low">
+                  <div class="action-top"><span>Alternative B</span><span class="risk low">Low risk</span></div>
+                  <strong>Hold and continue monitoring</strong>
+                  <p>Wait for the terminal gate appointment and reassess in 45 minutes.</p>
+                  <div class="action-metrics"><span><b>0h</b> recovered</span><span><b>$0</b> added cost</span><span><b>18%</b> SLA saved</span></div>
+                </button>
+              </div>
+            </section>
+
+            <section class="approval-bar">
+              <div><span>Selected action</span><strong id="selected-label">Expedite by dedicated truck</strong><small id="approval-note">Additional confirmation required · Estimated cost $4,850</small></div>
+              <div><button class="ghost" id="override-ai">Override AI</button><button class="primary" id="approve-action">Review and approve</button></div>
+            </section>
+          </div>
+
+          <div class="case-content hidden" id="evidence-tab">
+            <section class="card"><div class="section-title"><div><p class="eyebrow">Evidence and provenance</p><h3>Seven signals support this assessment</h3></div><span class="badge uncertainty">Freshness: 2m</span></div><div id="evidence-list" class="evidence-list"></div></section>
+          </div>
+          <div class="case-content hidden" id="timeline-tab"><section class="card"><div class="section-title"><div><p class="eyebrow">Exception lifecycle</p><h3>From detection to current decision</h3></div></div><div id="timeline-list" class="timeline-list"></div></section></div>
+          <div class="case-content hidden" id="audit-tab"><section class="card"><div class="section-title"><div><p class="eyebrow">Immutable history</p><h3>Decision and action audit</h3></div><button class="ghost">Export JSON</button></div><div id="audit-list" class="audit-list"></div></section></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="modal-backdrop" role="presentation">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="modal-close" id="modal-close" aria-label="Close">×</button>
+      <div id="modal-content"></div>
+    </section>
+  </div>
+  <div class="toast hidden" id="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>
