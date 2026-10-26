@@ -81,7 +81,7 @@ $$('.action-card').forEach(card=>card.onclick=()=>{selectedAction=card.dataset.a
 
 function openModal(html){$('#modal-content').innerHTML=html;$('#modal-backdrop').classList.remove('hidden');}
 function closeModal(){$('#modal-backdrop').classList.add('hidden');}
-$('#modal-close').onclick=closeModal; $('#modal-backdrop').onclick=e=>{if(e.target.id==='modal-backdrop')closeModal()};
+$('#modal-close').onclick=e=>{e.preventDefault();e.stopPropagation();closeModal()}; $('#modal-backdrop').onclick=e=>{if(e.target.id==='modal-backdrop')closeModal()}; window.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
 $('#close-drawer').onclick=()=>{document.body.classList.remove('drawer-open');closeCaseMenu()};
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),2800)}
 
