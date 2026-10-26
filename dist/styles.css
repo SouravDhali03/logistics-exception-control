@@ -26,7 +26,7 @@ main{min-width:0;padding:24px 28px 36px;max-width:1500px;width:100%;margin:0 aut
 .exception-name strong{display:block;font-size:12px;font-weight:550;line-height:1.25}
 .exception-name small,.route-cell,.impact-cell,.uncertainty-cell,.owner-cell,.exception-row time{display:block;color:var(--body);font-size:10px;line-height:1.35}
 .exception-name small{color:var(--mute);margin-top:4px;font-size:9px}.impact-cell{color:var(--ink)}.uncertainty-cell{font-weight:500}.exception-row time{color:var(--mute);font-size:9px}
-.case-panel{position:fixed;z-index:30;inset:0 auto 0 0;width:min(680px,92vw);background:var(--canvas);transform:translateX(-105%);transition:transform .22s ease;box-shadow:18px 0 36px rgba(18,24,40,.16);overflow:auto}
+.case-panel{position:fixed;z-index:30;inset:0 0 0 auto;width:min(680px,92vw);background:var(--canvas);transform:translateX(105%);transition:transform .22s ease;box-shadow:-18px 0 36px rgba(18,24,40,.16);overflow:auto}
 .drawer-open .case-panel{transform:translateX(0)}
 .drawer-open:before{content:"";position:fixed;z-index:25;inset:0;background:rgba(18,24,40,.28)}
 .case-header{padding-top:14px}.drawer-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.drawer-toolbar .eyebrow{margin:0}.drawer-toolbar .icon-only{width:32px;height:32px}
