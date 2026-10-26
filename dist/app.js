@@ -29,11 +29,24 @@ let audit=[
  ['14:11','Signal validation completed','policy/validation-v3']
 ];
 let selectedAction='expedite';
+let currentFilter='all';
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 function renderExceptions(){
- $('#exception-list').innerHTML=exceptions.map((e,i)=>`<button class="exception-item ${i===0?'active':''}" data-id="${e.id}"><div class="item-top"><span class="priority ${e.p.toLowerCase()}">${e.p}</span><time>${e.time}</time></div><strong>${e.title}</strong><p>${e.route}<br>${e.detail}</p><div class="item-bottom"><span>${e.uncertainty}</span><span class="mini-owner">${e.owner}</span></div></button>`).join('');
+ const visible=exceptions.filter(e=>currentFilter==='all'||(currentFilter==='critical'&&e.p==='P1')||(currentFilter==='mine'&&e.owner==='You'));
+ $('#exception-list').innerHTML=visible.map((e,i)=>`<button class="exception-item ${i===0?'active':''}" data-id="${e.id}"><div class="item-top"><span class="priority ${e.p.toLowerCase()}">${e.p}</span><time>${e.time}</time></div><strong>${e.title}</strong><p>${e.route}<br>${e.detail}</p><div class="item-bottom"><span>${e.uncertainty}</span><span class="mini-owner">${e.owner}</span></div></button>`).join('');
  $$('.exception-item').forEach(btn=>btn.onclick=()=>selectException(btn.dataset.id));
+}
+function setFilter(filter){
+ currentFilter=filter;
+ $$('.chip').forEach(button=>button.classList.toggle('active',button.dataset.filter===filter));
+ $$('.filter-option').forEach(button=>button.classList.toggle('active',button.dataset.filter===filter));
+ renderExceptions();
+ const popover=$('#filter-popover');
+ popover.classList.add('hidden');
+ $('#filter-toggle').setAttribute('aria-expanded','false');
+ const label={all:'Showing all 6 exceptions',critical:'Showing 1 critical exception',mine:'Showing 3 exceptions assigned to you'}[filter];
+ toast(label);
 }
 function selectException(id){
  const e=exceptions.find(x=>x.id===id); $$('.exception-item').forEach(x=>x.classList.toggle('active',x.dataset.id===id));
@@ -71,5 +84,16 @@ $('#override-ai').onclick=()=>openModal(`<p class="eyebrow">Human override</p><h
 document.addEventListener('click',e=>{if(e.target?.id==='apply-override'){audit.unshift([new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}),'Coordinator overrode AI assessment','user/sourav']);renderAudit();closeModal();toast('Override recorded · Recommendation refreshed')}});
 $('#explain-ai').onclick=()=>openModal(`<p class="eyebrow">Reasoning trace</p><h2>Why the delay is likely</h2><p>The model correlated the revised discharge event with the released rail slot and compared the resulting ETA against the customer commitment.</p><div class="modal-summary"><strong>Strongest contributors</strong><p>1. Rail slot unavailable — 41%<br>2. Discharge estimate +19h — 34%<br>3. Historical terminal recovery — 15%<br>4. Remaining signals — 10%</p></div><p><small>Confidence reflects evidence agreement and model reliability for comparable routes. It is not a guarantee.</small></p>`);
 $('#new-exception').onclick=()=>toast('Manual exception creation opened in prototype mode');
+$('#notifications').onclick=()=>toast('3 notifications · 1 requires approval');
+$('#filter-toggle').onclick=e=>{
+ e.stopPropagation();
+ const popover=$('#filter-popover');
+ const open=popover.classList.toggle('hidden')===false;
+ $('#filter-toggle').setAttribute('aria-expanded',String(open));
+};
+$('#filter-popover').onclick=e=>e.stopPropagation();
+$$('.chip').forEach(button=>button.onclick=()=>setFilter(button.dataset.filter));
+$$('.filter-option').forEach(button=>button.onclick=()=>setFilter(button.dataset.filter));
+document.addEventListener('click',()=>{$('#filter-popover').classList.add('hidden');$('#filter-toggle').setAttribute('aria-expanded','false')});
 $$('.nav-item').forEach(n=>n.onclick=()=>{ $$('.nav-item').forEach(x=>x.classList.remove('active'));n.classList.add('active');if(n.dataset.view!=='inbox')toast(`${n.textContent.trim()} view is represented in the active case prototype`);});
 renderExceptions();renderEvidence();renderTimeline();renderAudit();

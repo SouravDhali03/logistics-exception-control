@@ -15,11 +15,11 @@
     <aside class="sidebar">
       <div class="brand"><span class="brand-mark">TC</span><span>Tiger Control</span></div>
       <nav aria-label="Primary">
-        <button class="nav-item active" data-view="inbox"><span>⌁</span>Exception inbox<span class="nav-count">6</span></button>
-        <button class="nav-item" data-view="monitoring"><span>◉</span>Live monitoring</button>
-        <button class="nav-item" data-view="decisions"><span>◇</span>Decision history</button>
-        <button class="nav-item" data-view="learning"><span>✦</span>Learning review<span class="nav-count muted">3</span></button>
-        <button class="nav-item" data-view="audit"><span>▤</span>Audit log</button>
+        <button class="nav-item active" data-view="inbox"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5h16l-2 12.5H6L4 5.5Z"/><path d="M4.8 14h4l1.4 2h3.6l1.4-2h4"/></svg></span>Exception inbox<span class="nav-count">6</span></button>
+        <button class="nav-item" data-view="monitoring"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="2"/><path d="M12 2v2.5M22 12h-2.5M12 22v-2.5M2 12h2.5"/></svg></span>Live monitoring</button>
+        <button class="nav-item" data-view="decisions"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg></span>Decision history</button>
+        <button class="nav-item" data-view="learning"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 1.5 4.2L18 9l-4.5 1.8L12 15l-1.5-4.2L6 9l4.5-1.8L12 3Z"/><path d="m18.5 15 .8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z"/></svg></span>Learning review<span class="nav-count muted">3</span></button>
+        <button class="nav-item" data-view="audit"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4.5h10v16H7z"/><path d="M9.5 3h5v3h-5zM10 10h4M10 14h4M10 18h3"/></svg></span>Audit log</button>
       </nav>
       <div class="network-card">
         <div class="status-dot"></div>
@@ -31,7 +31,7 @@
     <main>
       <header class="topbar">
         <div><p class="eyebrow">Operations control tower</p><h1 id="page-title">Exception inbox</h1></div>
-        <div class="top-actions"><div class="live-pill"><span></span>Live</div><button class="icon-button" aria-label="Notifications">♢<b>3</b></button><button class="primary small" id="new-exception">+ New exception</button></div>
+        <div class="top-actions"><div class="live-pill"><span></span>Live</div><button class="icon-button" id="notifications" aria-label="Notifications"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7Z"/><path d="M10 20h4"/></svg><b>3</b></button><button class="primary small" id="new-exception">+ New exception</button></div>
       </header>
 
       <section class="kpis" aria-label="Operational summary">
@@ -43,8 +43,8 @@
 
       <section class="workspace">
         <aside class="queue-panel">
-          <div class="panel-head"><div><h2>Prioritized queue</h2><span>Updated just now</span></div><button class="icon-button" aria-label="Filter">≡</button></div>
-          <div class="filters"><button class="chip active">All 6</button><button class="chip">Critical 1</button><button class="chip">Mine 3</button></div>
+          <div class="panel-head"><div><h2>Prioritized queue</h2><span>Updated just now</span></div><div class="filter-control"><button class="icon-button" id="filter-toggle" aria-label="Filter exceptions" aria-expanded="false" aria-controls="filter-popover"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg></button><div class="filter-popover hidden" id="filter-popover"><p>Show exceptions</p><button class="filter-option active" data-filter="all"><span>All exceptions</span><b>6</b></button><button class="filter-option" data-filter="critical"><span>Critical only</span><b>1</b></button><button class="filter-option" data-filter="mine"><span>Assigned to me</span><b>3</b></button></div></div></div>
+          <div class="filters"><button class="chip active" data-filter="all">All 6</button><button class="chip" data-filter="critical">Critical 1</button><button class="chip" data-filter="mine">Mine 3</button></div>
           <div id="exception-list" class="exception-list"></div>
         </aside>
 
