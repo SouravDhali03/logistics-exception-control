@@ -163,3 +163,41 @@ main{max-width:none!important;width:100%!important;margin:0!important;padding:0 
   font-size:14px!important;
   line-height:1.4!important;
 }
+
+/* Blue utility navigation with a standalone product logo. */
+.global-utility{
+  background:var(--primary)!important;
+  border-bottom-color:rgba(255,255,255,.18)!important;
+}
+.utility-logo{
+  width:36px;
+  height:36px;
+  display:grid;
+  place-items:center;
+  color:#fff;
+}
+.utility-logo svg{
+  width:30px;
+  height:30px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.global-utility .hero-notifications,
+.global-utility .hero-avatar{
+  border-color:rgba(255,255,255,.45)!important;
+  background:rgba(255,255,255,.1)!important;
+  color:#fff!important;
+}
+.global-utility .hero-notifications:hover,
+.global-utility .hero-avatar:hover{
+  background:rgba(255,255,255,.2)!important;
+  color:#fff!important;
+}
+.global-utility .hero-notifications b{
+  border-color:var(--primary)!important;
+  background:#fff!important;
+  color:var(--primary)!important;
+}
