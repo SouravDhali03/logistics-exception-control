@@ -201,3 +201,46 @@ main{max-width:none!important;width:100%!important;margin:0!important;padding:0 
   background:#fff!important;
   color:var(--primary)!important;
 }
+
+/* Explicit final drawer and form refinements. */
+#priority-badge,
+#uncertainty-badge,
+#owner-badge,
+#action-options .risk.high,
+#action-options .risk.low{
+  width:max-content!important;
+  min-width:0!important;
+  min-height:28px!important;
+  padding:4px 10px!important;
+  border-radius:9999px!important;
+  font-family:inherit!important;
+  font-size:14px!important;
+  font-weight:500!important;
+  line-height:1.2!important;
+}
+#action-options .action-top .recommended,
+#action-options .action-top>span:first-child{
+  font-family:inherit!important;
+  font-size:14px!important;
+  font-weight:400!important;
+  line-height:1.35!important;
+}
+#more-menu{
+  border:0!important;
+  box-shadow:none!important;
+  background:transparent!important;
+}
+#more-menu:hover{background:var(--canvas-soft)!important}
+.case-form,
+.case-form label,
+.case-form input,
+.case-form textarea,
+.case-form select,
+.case-form button{
+  font-size:14px!important;
+}
+.case-form input,
+.case-form textarea,
+.case-form select{
+  line-height:1.45!important;
+}
