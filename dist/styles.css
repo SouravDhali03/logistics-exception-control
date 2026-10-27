@@ -107,3 +107,21 @@ main{max-width:none!important;width:100%!important;margin:0!important;padding:0 
 .impact-cell,
 .uncertainty-cell,
 .owner-cell{font-size:14px!important}
+
+/* Global utility navigation and drawer type hierarchy. */
+.global-utility{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:#fff;border-bottom:1px solid var(--hairline)}
+.utility-product{color:var(--ink);font-size:14px;font-weight:500;letter-spacing:-.01em}
+.global-utility .hero-actions{position:static!important;display:flex;align-items:center;gap:8px}
+.global-utility .hero-notifications,.global-utility .hero-avatar{position:relative!important;top:auto!important;right:auto!important;width:36px;height:36px;border:1px solid var(--hairline-strong)!important;background:#fff!important;color:var(--ink)!important;border-radius:50%!important}
+.global-utility .hero-notifications:hover,.global-utility .hero-avatar:hover{background:var(--canvas-soft)!important;color:var(--ink)!important}
+.global-utility .hero-notifications b{position:absolute;top:-5px;right:-4px;min-width:18px;height:18px;padding:0 4px;display:grid;place-items:center;border:2px solid #fff;border-radius:9999px;background:var(--primary);color:#fff;font-size:10px;line-height:1}
+.hero-tabs .top-tab.active{font-weight:400!important}
+#case-meta,.case-tabs button,.status-strip strong,.status-strip p,#explain-ai{font-size:14px!important}
+.case-tabs button{font-weight:400!important}
+.status-strip strong{font-weight:500!important}
+.status-strip p{line-height:1.45!important}
+.decision-grid span,.decision-grid p{font-size:14px!important;text-transform:none!important}
+.decision-grid span{font-weight:500;color:var(--body)}
+.decision-grid p{line-height:1.45!important}
+#assessment-confidence{min-height:28px!important;padding:4px 10px!important;border:1px solid #78a9ff!important;border-radius:9999px!important;background:#edf5ff!important;color:#0043ce!important;font-family:inherit!important;font-size:14px!important;font-weight:500!important;line-height:1.2!important;white-space:nowrap}
+@media(max-width:820px){.global-utility{padding:0 16px}.decision-grid span,.decision-grid p{font-size:14px!important}}
