@@ -135,8 +135,8 @@ main{max-width:none!important;width:100%!important;margin:0!important;padding:0 
 .route-stops{position:relative;display:grid;gap:14px;min-width:0;padding-left:18px}
 .route-stops:before{content:"";position:absolute;left:4px;top:9px;bottom:9px;width:1px;background:#8d8d8d}
 .route-stop{position:relative;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.25}
-.route-stop:before{content:"";position:absolute;left:-18px;top:50%;width:9px;height:9px;transform:translateY(-50%);background:var(--ink);z-index:1}
-.route-origin:before{border-radius:50%}
-.route-destination:before{border-radius:0}
+.stop-marker{position:absolute;left:-18px;top:50%;width:9px;height:9px;transform:translateY(-50%);background:var(--ink);z-index:1}
+.route-origin .stop-marker{border-radius:50%}
+.route-destination .stop-marker{border-radius:0}
 @media(max-width:1100px){.exception-table{min-width:1080px}.exception-table-head,.exception-row{grid-template-columns:82px 108px 200px 210px 170px 112px 80px 48px!important}}
 @media(max-width:820px){.exception-table{min-width:1020px}.exception-table-head,.exception-row{grid-template-columns:78px 102px 190px 200px 160px 108px 76px 46px!important}.route-journey{font-size:14px}}
