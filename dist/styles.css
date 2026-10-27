@@ -134,7 +134,7 @@ main{max-width:none!important;width:100%!important;margin:0!important;padding:0 
 .route-journey .mode-icon{flex:0 0 28px}
 .route-stops{position:relative;display:grid;gap:14px;min-width:0;padding-left:18px}
 .route-stops:before{content:"";position:absolute;left:4px;top:9px;bottom:9px;width:1px;background:#8d8d8d}
-.route-stop{position:relative;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.25}
+.route-stop{position:relative;display:block;overflow:visible;white-space:nowrap;line-height:1.25}
 .stop-marker{position:absolute;left:-18px;top:50%;width:9px;height:9px;transform:translateY(-50%);background:var(--ink);z-index:1}
 .route-origin .stop-marker{border-radius:50%}
 .route-destination .stop-marker{border-radius:0}
