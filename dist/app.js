@@ -69,7 +69,10 @@ function setFilter(filter){
 function selectException(id,openDrawer=true){
  const e=exceptions.find(x=>x.id===id); if(!e)return; selectedId=id; $$('.exception-item').forEach(x=>x.classList.toggle('active',x.dataset.id===id));
  $$('.exception-row').forEach(x=>x.classList.toggle('active',x.dataset.id===id));
- if(openDrawer)document.body.classList.add('drawer-open');
+ if(openDrawer){
+  document.body.classList.add('drawer-open');
+  document.documentElement.classList.add('drawer-open');
+ }
  const sample=id==='EXC-2481';
  $('#case-title').textContent=e.title; $('#case-meta').textContent=`${e.id} · ${e.route}`; $('#priority-badge').textContent=`${e.p} ${priorityLabel(e.p)}`; $('#priority-badge').className='badge '+({P1:'critical',P2:'uncertainty',P3:'owner'}[e.p]); $('#uncertainty-badge').textContent=e.uncertainty; $('#owner-badge').textContent=e.owner==='You'?'Assigned to you':`Owner: ${e.owner}`;
  $('.status-strip').classList.toggle('hidden',!sample); $('.actions-section').classList.toggle('hidden',!sample); $('.approval-bar').classList.toggle('hidden',!sample); $('.evidence-row').classList.toggle('hidden',!sample);
@@ -90,7 +93,11 @@ $$('.action-card').forEach(card=>card.onclick=()=>{selectedAction=card.dataset.a
 function openModal(html){$('#modal-content').innerHTML=html;$('#modal-backdrop').classList.remove('hidden');}
 function closeModal(){$('#modal-backdrop').classList.add('hidden');}
 $('#modal-close').onclick=e=>{e.preventDefault();e.stopPropagation();closeModal()}; $('#modal-backdrop').onclick=e=>{if(e.target.id==='modal-backdrop')closeModal()}; window.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
-$('#close-drawer').onclick=()=>{document.body.classList.remove('drawer-open');closeCaseMenu()};
+$('#close-drawer').onclick=()=>{
+ document.body.classList.remove('drawer-open');
+ document.documentElement.classList.remove('drawer-open');
+ closeCaseMenu();
+};
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),2800)}
 
 $('#approve-action').onclick=()=>{

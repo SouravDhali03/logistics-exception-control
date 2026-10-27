@@ -244,3 +244,21 @@ main{max-width:none!important;width:100%!important;margin:0!important;padding:0 
 .case-form select{
   line-height:1.45!important;
 }
+
+/* Drawer focus: the page holds still while the details panel scrolls. */
+html.drawer-open,
+body.drawer-open{
+  overflow:hidden!important;
+}
+.drawer-open .case-panel{
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+}
+
+/* Match the inbox case-title hierarchy inside the decision card. */
+#assessment-title{
+  font-size:16px!important;
+  line-height:1.3!important;
+  font-weight:400!important;
+  letter-spacing:0!important;
+}
