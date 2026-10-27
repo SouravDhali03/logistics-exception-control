@@ -262,3 +262,14 @@ body.drawer-open{
   font-weight:400!important;
   letter-spacing:0!important;
 }
+
+/* Keep the audit trail as readable as the rest of the exception details. */
+.audit-item,
+.audit-item strong,
+.audit-item p,
+.audit-item code{
+  font-size:14px!important;
+  line-height:1.4!important;
+}
+.audit-item strong{font-weight:500!important}
+.audit-item p{margin:0!important}
