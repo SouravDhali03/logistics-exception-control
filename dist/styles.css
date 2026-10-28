@@ -582,6 +582,12 @@ main{
   width:100%!important;
   min-height:36px!important;
 }
+
+.case-panel .evidence-row,
+.case-panel .action-card,
+.case-panel .action-card.selected{
+  box-shadow:none!important;
+}
 .drawer-action-controls button{
   width:min(100%,180px)!important;
   min-height:40px!important;
