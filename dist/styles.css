@@ -896,7 +896,7 @@ body *:not(.hgi-stroke){
 .pagination-btn:disabled{color:#b7b7b7;cursor:not-allowed}
 @media(max-width:620px){.queue-pagination{margin-top:24px;padding:0 16px 12px}.queue-pagination-summary{font-size:12px}.pagination-btn{min-width:28px;height:28px;font-size:12px}}
 @media(prefers-reduced-motion:reduce){.utility-network-state b{animation:none}}
-.page-utility{height:64px!important;min-height:64px!important}
+.page-utility{height:76px!important;min-height:76px!important;padding:12px 24px 0!important}
 .page-utility .hero-actions{gap:8px!important}
 .page-utility .hero-notifications,.page-utility .hero-avatar{
   width:36px!important;
