@@ -827,3 +827,13 @@ body *:not(.hgi-stroke){
   }
   .row-action{justify-self:center!important;margin-inline:8px!important}
 }
+
+/* Keep the human-override form readable and consistent with the product's
+   14px control scale. */
+.modal label,
+.modal textarea,
+.modal input,
+.modal select,
+.modal .modal-actions button{
+  font-size:14px!important;
+}
