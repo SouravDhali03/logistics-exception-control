@@ -2,9 +2,11 @@
 
 An AI-assisted logistics control tower for detecting, prioritizing, investigating, and resolving shipment exceptions with clear human oversight.
 
-**Live demo:** [logistics-exception-control-20261028.sourav-dhali.chatgpt.site](https://logistics-exception-control-20261028.sourav-dhali.chatgpt.site/)
+**Public GitHub Pages demo:** [souravdhali03.github.io/logistics-exception-control](https://souravdhali03.github.io/logistics-exception-control/)
 
-> The demo is privately deployed. Access is limited to the site owner unless sharing is enabled in Sites.
+**Private Sites demo:** [logistics-exception-control-20261028.sourav-dhali.chatgpt.site](https://logistics-exception-control-20261028.sourav-dhali.chatgpt.site/)
+
+> The GitHub Pages version is public. The Sites deployment remains private and owner-only.
 
 ## Product objective
 
@@ -117,7 +119,10 @@ Then open [http://127.0.0.1:4173](http://127.0.0.1:4173).
 
 ## Deployment
 
-The site is deployed as a private static Site. The deployment packages the contents of `dist/`; no build step, server runtime, or environment variables are required.
+The project has two static deployment options:
+
+- **GitHub Pages:** [public project page](https://souravdhali03.github.io/logistics-exception-control/). The `.github/workflows/deploy-pages.yml` workflow publishes `dist/` whenever changes are pushed to `main`.
+- **OpenAI Sites:** a private owner-only deployment that packages `dist/` without a build step, server runtime, or environment variables.
 
 ## Prototype scope
 
@@ -125,6 +130,13 @@ This repository is a product prototype. Approval and execution interactions reco
 
 Production implementation would require authentication, role-based access, persistent backend storage, shipment and carrier integrations, notification services, observability, and security review.
 
-## Repository
+## Repository details
 
-[github.com/SouravDhali03/logistics-exception-control](https://github.com/SouravDhali03/logistics-exception-control)
+| Item | Details |
+| --- | --- |
+| Repository | [SouravDhali03/logistics-exception-control](https://github.com/SouravDhali03/logistics-exception-control) |
+| Public demo | [GitHub Pages](https://souravdhali03.github.io/logistics-exception-control/) |
+| Primary branch | `main` |
+| Application source | [`dist/`](./dist) |
+| Design case study | [`DESIGN.md`](./DESIGN.md) |
+| Pages workflow | [`.github/workflows/deploy-pages.yml`](./.github/workflows/deploy-pages.yml) |
