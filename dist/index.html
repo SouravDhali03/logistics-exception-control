@@ -79,10 +79,10 @@
             <section class="decision-card card">
               <div class="section-title"><div><p class="eyebrow">01 / Understand the exception</p><h3 id="assessment-title">Delivery commitment is likely to be missed</h3></div><span class="confidence" id="assessment-confidence">82% confidence</span></div>
               <div class="decision-grid">
-                <div><span><i class="hgi-stroke hgi-activity-01" aria-hidden="true"></i> What happened</span><p id="what-happened">Vessel discharge moved by 19 hours. The connecting rail slot is now unavailable.</p></div>
-                <div><span><i class="hgi-stroke hgi-search-01" aria-hidden="true"></i> Likely cause</span><p id="likely-cause">Terminal congestion following an unplanned crane outage.</p></div>
-                <div><span><i class="hgi-stroke hgi-alert-circle" aria-hidden="true"></i> Business impact</span><p id="business-impact">31h delay · SLA breach likely · $42k order at risk.</p></div>
-                <div><span><i class="hgi-stroke hgi-file-01" aria-hidden="true"></i> Missing data</span><p id="missing-data">Confirmed terminal gate appointment.</p></div>
+                <div><span><i class="hgi-stroke hgi-activity-01" aria-hidden="true"></i> What happened <b class="evidence-type fact">Verified fact</b></span><p id="what-happened">Vessel discharge moved by 19 hours. The connecting rail slot is now unavailable.</p></div>
+                <div><span><i class="hgi-stroke hgi-search-01" aria-hidden="true"></i> Likely cause <b class="evidence-type inference">AI inference</b></span><p id="likely-cause">Terminal congestion following an unplanned crane outage.</p></div>
+                <div><span><i class="hgi-stroke hgi-alert-circle" aria-hidden="true"></i> Business impact <b class="evidence-type inference">AI assessment</b></span><p id="business-impact">31h delay · SLA breach likely · $42k order at risk.</p></div>
+                <div><span><i class="hgi-stroke hgi-file-01" aria-hidden="true"></i> Missing data <b class="evidence-type gap">Data gap</b></span><p id="missing-data">Confirmed terminal gate appointment.</p></div>
               </div>
               <section class="evidence-summary" aria-label="Evidence quality summary">
                 <div class="evidence-summary-head">
@@ -120,6 +120,17 @@
                   <div class="action-card-actions"><button class="ghost override-ai" type="button">Override AI</button><button class="primary approve-action" type="button">Approve action</button></div>
                 </div>
               </div>
+            </section>
+
+            <section class="resolution-section card" aria-label="Resolution monitoring">
+              <div class="section-title"><div><p class="eyebrow">03 / Monitor and close</p><h3>Resolution progress</h3><p class="section-hint">Keep the exception open until the action and objective evidence confirm the outcome.</p></div><span class="resolution-status" id="resolution-status">Awaiting decision</span></div>
+              <div class="resolution-grid">
+                <div><span>Action status</span><strong id="action-status">No action approved</strong><p id="action-status-detail">Choose a response to create a tracked resolution step.</p></div>
+                <div><span>Next evidence check</span><strong id="next-checkpoint">Gate appointment confirmation</strong><p id="next-checkpoint-detail">No external request has been sent in this prototype.</p></div>
+                <div><span>SLA response gate</span><strong id="sla-status">Acknowledged</strong><p>Response timer satisfied · escalation not required.</p></div>
+              </div>
+              <div class="resolution-evidence" id="resolution-evidence"><i class="hgi-stroke hgi-information-circle" aria-hidden="true"></i><span>Evidence state: waiting for an approved action or new verified event.</span></div>
+              <div class="resolution-actions"><button class="ghost" id="simulate-update">Simulate verified update</button><button class="ghost hidden" id="reopen-case">Reopen exception</button><button class="primary" id="review-closure" disabled>Review closure criteria</button></div>
             </section>
 
           </div>
