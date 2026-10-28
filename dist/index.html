@@ -120,6 +120,11 @@
                   <div class="action-card-actions"><button class="ghost override-ai" type="button">Override AI</button><button class="primary approve-action" type="button">Approve action</button></div>
                 </div>
               </div>
+              <section class="approved-decision hidden" id="approved-decision" aria-label="Approved response">
+                <div><p class="eyebrow">Decision recorded</p><h3 id="approved-decision-title">Approved action</h3><p id="approved-decision-description">The selected response is now being monitored.</p></div>
+                <div class="approved-decision-metrics" id="approved-decision-metrics"></div>
+                <div class="approved-decision-actions"><button class="ghost" id="view-decision-audit" type="button">View decision history</button><span>Alternatives retained in audit</span></div>
+              </section>
             </section>
 
             <section class="resolution-section card" aria-label="Resolution monitoring">

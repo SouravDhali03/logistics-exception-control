@@ -113,6 +113,7 @@ function renderResolution(){
  const section=$('.resolution-section'),status=$('#resolution-status'),action=$('#action-status'),actionDetail=$('#action-status-detail'),checkpoint=$('#next-checkpoint'),checkpointDetail=$('#next-checkpoint-detail'),evidenceState=$('#resolution-evidence'),closure=$('#review-closure'),reopen=$('#reopen-case'),simulate=$('#simulate-update');
  if(!status)return;
  const actionName=resolutionState.action?labels[resolutionState.action][0]:'No action approved';
+ renderActionDecision();
  section.classList.remove('hidden','is-compact'); status.className='resolution-status'; evidenceState.className='resolution-evidence'; reopen.classList.add('hidden'); simulate.classList.remove('hidden'); closure.disabled=true;
  if(resolutionState.stage==='awaiting'){
   section.classList.add('hidden'); status.textContent='Awaiting decision'; action.textContent=actionName; actionDetail.textContent='Choose a response to create a tracked resolution step.'; checkpoint.textContent='Gate appointment confirmation'; checkpointDetail.textContent='No external request has been sent in this prototype.'; evidenceState.innerHTML='<i class="hgi-stroke hgi-information-circle" aria-hidden="true"></i><span>Evidence state: waiting for an approved action or new verified event.</span>';
@@ -123,6 +124,14 @@ function renderResolution(){
  } else {
   section.classList.add('is-compact'); status.textContent='Closed · monitoring retained'; status.classList.add('closed'); action.textContent=actionName; actionDetail.textContent='Resolution was confirmed by the coordinator.'; checkpoint.textContent='Continuous monitoring'; checkpointDetail.textContent='Contradictory events will reopen this exception.'; evidenceState.classList.add('closed'); evidenceState.innerHTML='<i class="hgi-stroke hgi-checkmark-circle-02" aria-hidden="true"></i><span>Resolution criteria were confirmed. The full decision history remains available in Audit.</span>'; reopen.classList.remove('hidden'); simulate.classList.add('hidden');
  }
+}
+function renderActionDecision(){
+ const section=$('.actions-section'),summary=$('#approved-decision'); if(!section||!summary)return;
+ const active=resolutionState.stage!=='awaiting'&&resolutionState.action;
+ section.classList.toggle('is-approved',Boolean(active)); summary.classList.toggle('hidden',!active);
+ if(!active)return;
+ const details={expedite:{copy:'A dedicated truck transfer is being tracked as the selected recovery path.',metrics:['22h recovered','$4,850 added cost','76% SLA saved']},rebook:{copy:'The next confirmed rail departure is being tracked as the selected recovery path.',metrics:['8h recovered','$620 added cost','42% SLA saved']},hold:{copy:'Monitoring is the selected response while the next terminal confirmation is awaited.',metrics:['0h recovered','$0 added cost','18% SLA saved']}}[resolutionState.action];
+ $('#approved-decision-title').textContent=labels[resolutionState.action][0]; $('#approved-decision-description').textContent=details.copy; $('#approved-decision-metrics').innerHTML=details.metrics.map(metric=>`<span>${metric}</span>`).join('');
 }
 function switchTab(name){ $$('.case-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name)); ['decision','evidence','timeline','audit'].forEach(t=>$(`#${t}-tab`).classList.toggle('hidden',t!==name)); }
 $$('.case-tabs button').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab)); $$('[data-tab-open]').forEach(b=>b.onclick=()=>switchTab(b.dataset.tabOpen));
@@ -167,6 +176,7 @@ $('#review-closure').onclick=()=>{
  $('#cancel-closure').onclick=closeModal; $('#confirm-closure').onclick=()=>{const complete=['criteria-milestone','criteria-action','criteria-risk','criteria-alerts'].every(id=>$('#'+id).checked);if(!complete){toast('Confirm every resolution criterion before closing');return}resolutionState.stage='closed';addAudit('Coordinator confirmed resolution and closed exception');timeline.unshift([clock(),'Exception closed','Resolution criteria confirmed; outcome monitoring retained.']);renderTimeline();renderResolution();closeModal();toast('Exception closed · monitoring remains active');};
 };
 $('#reopen-case').onclick=()=>{resolutionState.stage='in-progress';resolutionState.verified=false;addAudit('Exception reopened after new information','system/event-correlation');timeline.unshift([clock(),'Exception reopened','New or contradictory information requires renewed monitoring.']);renderTimeline();renderResolution();toast('Exception reopened and returned to monitoring');};
+$('#view-decision-audit').onclick=()=>switchTab('audit');
 function overrideAi(){openModal(`<p class="eyebrow">Human override</p><h2>Correct the assessment or action</h2><p>Your correction will be preserved in the audit history and reviewed as a learning candidate after closure.</p><label>Actual cause<textarea style="width:100%;min-height:70px;margin-top:6px;border:1px solid #dce3e7;border-radius:8px;padding:10px">Terminal labor shortage</textarea></label><label style="display:block;margin-top:12px">Preferred action<textarea style="width:100%;min-height:70px;margin-top:6px;border:1px solid #dce3e7;border-radius:8px;padding:10px">Escalate to regional operations before committing cost</textarea></label><div class="modal-actions"><button class="ghost" onclick="document.querySelector('#modal-close').click()">Cancel</button><button class="primary" id="apply-override">Update recommendation</button></div>`) }
 $$('.override-ai').forEach(button=>button.onclick=e=>{e.stopPropagation();selectedAction=button.closest('.action-card').dataset.action;overrideAi()});
 document.addEventListener('click',e=>{if(e.target?.id==='apply-override'){audit.unshift([new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}),'Coordinator overrode AI assessment','user/sourav']);renderAudit();closeModal();toast('Override recorded · Recommendation refreshed')}});
