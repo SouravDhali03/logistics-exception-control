@@ -848,7 +848,7 @@ body *:not(.hgi-stroke){
   min-height:52px!important;
   gap:16px!important;
   padding:0 24px!important;
-  border-bottom:1px solid #dbdee3!important;
+  border-bottom:0!important;
   background:#fff!important;
 }
 .utility-greeting{
@@ -858,7 +858,7 @@ body *:not(.hgi-stroke){
   color:#000;
   font-family:"Neue Haas Grotesk Display",Arial,sans-serif;
   font-size:18px;
-  font-weight:400;
+  font-weight:400!important;
   line-height:normal;
 }
 .utility-network{
