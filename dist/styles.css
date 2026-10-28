@@ -882,8 +882,17 @@ body *:not(.hgi-stroke){
   font-size:16px;
   font-weight:400;
   line-height:normal;
+  color:#198754;
 }
-.utility-network-state b{display:block;width:10px;height:10px;background:#000}
+.utility-network-state b{display:block;width:10px;height:10px;background:#198754}
+.queue-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 22px;border-top:1px solid #e1e3e5;background:#fff;color:var(--body);font-size:14px}
+.queue-pagination-summary{color:var(--mute);font-size:14px}
+.queue-pagination-controls{display:flex;align-items:center;gap:4px}
+.pagination-btn{min-width:30px;height:30px;padding:0 8px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--body);font-size:14px;cursor:pointer}
+.pagination-btn:hover:not(:disabled){background:var(--canvas-soft);border-color:var(--hairline)}
+.pagination-btn.active{background:var(--primary);color:#fff}
+.pagination-btn:disabled{color:#b7b7b7;cursor:not-allowed}
+@media(max-width:620px){.queue-pagination{padding:12px 16px}.queue-pagination-summary{font-size:12px}.pagination-btn{min-width:28px;height:28px;font-size:12px}}
 .page-utility .hero-actions{gap:8px!important}
 .page-utility .hero-notifications,.page-utility .hero-avatar{
   width:36px!important;
