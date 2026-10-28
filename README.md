@@ -4,7 +4,6 @@ An AI-assisted logistics control tower for detecting, prioritizing, investigatin
 
 **Public GitHub Pages demo:** [souravdhali03.github.io/logistics-exception-control](https://souravdhali03.github.io/logistics-exception-control/)
 
-**Private Sites demo:** [logistics-exception-control-20261028.sourav-dhali.chatgpt.site](https://logistics-exception-control-20261028.sourav-dhali.chatgpt.site/)
 
 > The GitHub Pages version is public. The Sites deployment remains private and owner-only.
 
