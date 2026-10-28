@@ -548,3 +548,35 @@ main{
 #action-options .action-metrics{
   grid-template-columns:repeat(3,minmax(0,1fr))!important;
 }
+
+/* Drawer review controls: keep the approval decision beside the resolution
+   choices instead of burying it at the bottom of the panel. */
+.drawer-action-controls{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-end!important;
+  gap:8px!important;
+  margin-top:12px!important;
+}
+.drawer-action-controls button{
+  width:min(100%,180px)!important;
+  min-height:40px!important;
+}
+
+/* The coordinator identity block is intentionally omitted from this compact
+   control-tower rail; the global avatar remains available in the hero utility. */
+.sidebar .profile{display:none!important}
+
+/* Consistent Shopify-style surfaces in the exception drawer. */
+.case-panel .status-strip,
+.case-panel .decision-card,
+.case-panel .decision-grid,
+.case-panel .evidence-row,
+.case-panel .action-card,
+.case-panel .approval-bar,
+.case-panel .drawer-action-controls,
+.case-panel .card{
+  border-radius:16px!important;
+}
+.case-panel .decision-grid{overflow:hidden!important}
+.case-panel .evidence-row{overflow:hidden!important}

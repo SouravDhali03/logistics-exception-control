@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://use.hugeicons.com/font/icons.css" />
-  <link rel="stylesheet" href="styles.css?v=20261028-4" />
+  <link rel="stylesheet" href="styles.css?v=20261028-5" />
 </head>
 <body>
   <div class="app-shell">
@@ -22,7 +22,6 @@
         <button class="nav-item" data-view="learning"><span class="nav-icon" aria-hidden="true"><i class="hgi-stroke hgi-ai-learning"></i></span>Learning review<span class="nav-count muted">3</span></button>
         <button class="nav-item" data-view="audit"><span class="nav-icon" aria-hidden="true"><i class="hgi-stroke hgi-clipboard-list"></i></span>Audit log</button>
       </nav>
-      <div class="profile"><div class="avatar">SD</div><div><strong>Sourav</strong><small>Operations coordinator</small></div><button aria-label="Account menu"><i class="hgi-stroke hgi-more-horizontal" aria-hidden="true"></i></button></div>
     </aside>
 
     <main>
@@ -108,11 +107,14 @@
                   <div class="action-metrics"><span><b>0h</b> recovered</span><span><b>$0</b> added cost</span><span><b>18%</b> SLA saved</span></div>
                 </button>
               </div>
+              <div class="drawer-action-controls" aria-label="Decision actions">
+                <button class="ghost" id="override-ai">Override AI</button>
+                <button class="primary" id="approve-action">Review and approve</button>
+              </div>
             </section>
 
             <section class="approval-bar">
               <div><span>Selected action</span><strong id="selected-label">Expedite by dedicated truck</strong><small id="approval-note">Additional confirmation required · Estimated cost $4,850</small></div>
-              <div><button class="ghost" id="override-ai">Override AI</button><button class="primary" id="approve-action">Review and approve</button></div>
             </section>
           </div>
 
