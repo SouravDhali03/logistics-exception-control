@@ -1,11 +1,8 @@
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="LogoIpsum Asset" clip-path="url(#clip0_0_4)">
-<path id="Vector" fill-rule="evenodd" clip-rule="evenodd" d="M7 0C10.866 0 14 3.134 14 7V0H21C24.866 0 28 3.134 28 7C28 10.866 24.866 14 21 14C24.866 14 28 17.134 28 21C28 22.9196 27.2273 24.6588 25.976 25.9234L25.9498 25.9498L25.9265 25.9729C24.6616 27.226 22.9212 28 21 28C19.0919 28 17.362 27.2365 16.0993 25.9983C16.0829 25.9822 16.0665 25.966 16.0502 25.9498C16.0349 25.9344 16.0196 25.919 16.0045 25.9036C14.7647 24.6406 14 22.9096 14 21C14 24.866 10.866 28 7 28C3.134 28 0 24.866 0 21V14H7C3.134 14 0 10.866 0 7C0 3.134 3.134 0 7 0ZM12.6 7C12.6 10.0928 10.0928 12.6 7 12.6V1.4C10.0928 1.4 12.6 3.9072 12.6 7ZM26.6 21C26.6 17.9072 24.0928 15.4 21 15.4C17.9072 15.4 15.4 17.9072 15.4 21H26.6ZM1.4 15.4V21C1.4 24.0928 3.9072 26.6 7 26.6C10.0928 26.6 12.6 24.0928 12.6 21V15.4H1.4ZM15.4 12.6V1.4H21C24.0928 1.4 26.6 3.9072 26.6 7C26.6 10.0928 24.0928 12.6 21 12.6H15.4Z" fill="white"/>
-</g>
-<defs>
-<clipPath id="clip0_0_4">
-<rect width="28" height="28" fill="white"/>
-</clipPath>
-</defs>
+<svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="28" height="28" rx="7" fill="#0F62FE"/>
+  <path d="M7.5 20.5V9.5H15C18.038 9.5 20.5 11.962 20.5 15V18.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M7.5 20.5H12.5" stroke="#A6C8FF" stroke-width="1.8" stroke-linecap="round"/>
+  <circle cx="7.5" cy="20.5" r="2.1" fill="white"/>
+  <circle cx="20.5" cy="18.5" r="2.1" fill="#A6C8FF"/>
 </svg>
 
