@@ -457,3 +457,20 @@ main{background:#f6f6f2!important;min-width:0!important}
   .global-utility{padding:0 16px!important}
   .topbar{margin-left:16px!important;margin-right:16px!important}
 }
+
+/* Keep the full Shopify-style rail expanded at desktop widths. */
+@media(min-width:821px){
+  .app-shell{grid-template-columns:260px minmax(0,1fr)!important}
+  .sidebar{display:flex!important;width:260px!important;padding:24px 16px 18px!important}
+  .brand span:last-child{display:inline!important;font-size:14px!important}
+  .nav-item{grid-template-columns:22px 1fr auto!important}
+  .nav-item:not(.active){font-size:13px!important}
+  .nav-item:not(.active) span:first-of-type{display:inline!important}
+  .nav-count{display:block!important}
+  .network-card{display:flex!important}
+  .profile{display:grid!important}
+  .profile>div:not(.avatar),.profile button{display:block!important}
+  main{background:#f6f6f2!important}
+  .topbar{display:flex!important}
+  .kpis{display:grid!important}
+}
