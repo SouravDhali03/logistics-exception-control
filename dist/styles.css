@@ -568,6 +568,20 @@ main{
   padding:0!important;
   margin:0 0 12px!important;
 }
+
+.action-card-actions{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  gap:8px!important;
+  border-top:1px solid var(--hairline)!important;
+  margin-top:12px!important;
+  padding-top:12px!important;
+}
+.action-card-actions button{
+  width:100%!important;
+  min-height:36px!important;
+}
 .drawer-action-controls button{
   width:min(100%,180px)!important;
   min-height:40px!important;

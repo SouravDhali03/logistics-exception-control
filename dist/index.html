@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://use.hugeicons.com/font/icons.css" />
-  <link rel="stylesheet" href="styles.css?v=20261028-6" />
+  <link rel="stylesheet" href="styles.css?v=20261028-7" />
 </head>
 <body>
   <div class="app-shell">
@@ -88,28 +88,27 @@
             <section class="actions-section">
               <div class="section-title"><div><p class="eyebrow">02 / Choose a response</p><h3>Choose how to protect the delivery</h3><p class="section-hint">Compare recovery time, cost and risk before approving.</p></div><button class="ghost" id="request-info">Request more information</button></div>
               <div class="action-options" id="action-options">
-                <button class="action-card selected" data-action="expedite" data-risk="high">
+                <div class="action-card selected" data-action="expedite" data-risk="high" role="button" tabindex="0">
                   <div class="action-top"><span class="recommended">Recommended</span><span class="risk high">Higher risk</span></div>
                   <strong>Expedite by dedicated truck</strong>
                   <p>Move container from Rotterdam to Duisburg by road and connect to an earlier rail service.</p>
                   <div class="action-metrics"><span><b>22h</b> recovered</span><span><b>$4,850</b> added cost</span><span><b>76%</b> SLA saved</span></div>
-                </button>
-                <button class="action-card" data-action="rebook" data-risk="low">
+                  <div class="action-card-actions"><button class="ghost override-ai" type="button">Override AI</button><button class="primary approve-action" type="button">Review and approve</button></div>
+                </div>
+                <div class="action-card" data-action="rebook" data-risk="low" role="button" tabindex="0">
                   <div class="action-top"><span>Alternative A</span><span class="risk low">Low risk</span></div>
                   <strong>Rebook next rail departure</strong>
                   <p>Accept the next confirmed rail slot and proactively update the customer.</p>
                   <div class="action-metrics"><span><b>8h</b> recovered</span><span><b>$620</b> added cost</span><span><b>42%</b> SLA saved</span></div>
-                </button>
-                <button class="action-card" data-action="hold" data-risk="low">
+                  <div class="action-card-actions"><button class="ghost override-ai" type="button">Override AI</button><button class="primary approve-action" type="button">Approve action</button></div>
+                </div>
+                <div class="action-card" data-action="hold" data-risk="low" role="button" tabindex="0">
                   <div class="action-top"><span>Alternative B</span><span class="risk low">Low risk</span></div>
                   <strong>Hold and continue monitoring</strong>
                   <p>Wait for the terminal gate appointment and reassess in 45 minutes.</p>
                   <div class="action-metrics"><span><b>0h</b> recovered</span><span><b>$0</b> added cost</span><span><b>18%</b> SLA saved</span></div>
-                </button>
-              </div>
-              <div class="drawer-action-controls" aria-label="Decision actions">
-                <button class="ghost" id="override-ai">Override AI</button>
-                <button class="primary" id="approve-action">Review and approve</button>
+                  <div class="action-card-actions"><button class="ghost override-ai" type="button">Override AI</button><button class="primary approve-action" type="button">Approve action</button></div>
+                </div>
               </div>
             </section>
 
