@@ -32,7 +32,19 @@
     </aside>
 
     <main>
-      <div class="page-utility" aria-label="Global actions"><div class="hero-actions"><button class="hero-notifications icon-button" id="notifications" aria-label="Notifications"><i class="hgi-stroke hgi-notification-02" aria-hidden="true"></i><b>3</b></button><button class="hero-avatar" aria-label="Account menu">SD</button></div></div>
+      <header class="page-utility" aria-label="Global actions">
+        <p class="utility-greeting">Good morning, Sourav</p>
+        <div class="utility-network" aria-label="Network status: Stable, 24 sources connected">
+          <span class="utility-network-label">Network status</span>
+          <span class="utility-network-state"><b aria-hidden="true"></b>Stable</span>
+          <span class="utility-network-detail">24 sources connected</span>
+        </div>
+        <div class="hero-actions">
+          <button class="hero-notifications icon-button" id="notifications" aria-label="Notifications"><img src="assets/notification-01.svg" alt="" aria-hidden="true"></button>
+          <button class="hero-avatar" aria-label="Account menu"><img src="assets/header-avatar.png" alt="Sourav Dhali"></button>
+          <button class="utility-menu-toggle" aria-label="Open account menu"><img src="assets/chevron-down.svg" alt="" aria-hidden="true"></button>
+        </div>
+      </header>
       <nav class="hero-tabs top-tabs" aria-label="Primary">
         <button class="top-tab active" data-view="inbox"><i class="hgi-stroke hgi-inbox" aria-hidden="true"></i>Inbox <span>6</span></button>
         <button class="top-tab" data-view="monitoring"><i class="hgi-stroke hgi-activity-01" aria-hidden="true"></i>Monitoring</button>
