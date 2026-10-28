@@ -38,6 +38,7 @@ let currentFilter='all';
 let selectedId='EXC-2481';
 let currentPage=1;
 const pageSize=6;
+let resolutionState={stage:'awaiting',action:null,verified:false};
 
 const $=s=>document.querySelector(s)||{onclick:null,setAttribute(){},classList:{add(){},remove(){},toggle(){return false}}}, $$=s=>[...document.querySelectorAll(s)];
 const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -97,7 +98,7 @@ function selectException(id,openDrawer=true){
  }
  const sample=id==='EXC-2481';
  $('#case-title').textContent=e.title; $('#case-meta').innerHTML=`${escapeHtml(e.id)} · ${escapeHtml(e.route)} <button class="meta-copy" id="copy-meta" aria-label="Copy exception details" title="Copy exception details"><i class="hgi-stroke hgi-copy-01" aria-hidden="true"></i></button>`; $('#priority-badge').textContent=`${e.p} ${priorityLabel(e.p)}`; $('#priority-badge').className='badge '+({P1:'critical',P2:'uncertainty',P3:'owner'}[e.p]); $('#uncertainty-badge').textContent=e.uncertainty; $('#owner-badge').innerHTML=`${e.owner==='You'?'Assigned to you':`Owner: ${escapeHtml(e.owner)}`} <i class="hgi-stroke hgi-arrow-down-01" aria-hidden="true"></i>`;
- $('.status-strip').classList.toggle('hidden',!sample); $('.actions-section').classList.toggle('hidden',!sample); $('.evidence-row').classList.toggle('hidden',!sample);
+ $('.status-strip').classList.toggle('hidden',!sample); $('.actions-section').classList.toggle('hidden',!sample); $('.resolution-section').classList.toggle('hidden',!sample); $('.evidence-row').classList.toggle('hidden',!sample);
  $$('.case-tabs button:not([data-tab="decision"])').forEach(b=>b.classList.toggle('hidden',!sample)); switchTab('decision');
  $('#assessment-title').textContent=sample?'Delivery commitment is likely to be missed':'Assessment needs review'; $('#assessment-confidence').textContent=sample?'82% confidence':'Unverified';
  if(!sample){ $('#what-happened').textContent=e.detail; $('#likely-cause').textContent='Not yet assessed.'; $('#business-impact').textContent=`${e.route} · ${priorityLabel(e.p)} priority`; $('#missing-data').textContent='Supporting evidence and partner confirmation.'; }
@@ -106,6 +107,23 @@ function selectException(id,openDrawer=true){
 function renderEvidence(){ $('#evidence-list').innerHTML=evidence.map(x=>`<div class="evidence-item"><div class="source-icon">${x[0]}</div><div><strong>${x[1]}</strong><p>${x[2]}</p></div><span class="source-state">${x[3]}</span></div>`).join(''); }
 function renderTimeline(){ $('#timeline-list').innerHTML=timeline.map(x=>`<div class="timeline-item"><time>${x[0]}</time><div class="timeline-line"></div><div><strong>${x[1]}</strong><p>${x[2]}</p></div></div>`).join(''); }
 function renderAudit(){ $('#audit-list').innerHTML=audit.map(x=>`<div class="audit-item"><strong>${x[0]}</strong><p>${x[1]}</p><code>${x[2]}</code></div>`).join(''); }
+function clock(){return new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});}
+function addAudit(event,actor='user/sourav'){audit.unshift([clock(),event,actor]);renderAudit();}
+function renderResolution(){
+ const status=$('#resolution-status'),action=$('#action-status'),actionDetail=$('#action-status-detail'),checkpoint=$('#next-checkpoint'),checkpointDetail=$('#next-checkpoint-detail'),evidenceState=$('#resolution-evidence'),closure=$('#review-closure'),reopen=$('#reopen-case');
+ if(!status)return;
+ const actionName=resolutionState.action?labels[resolutionState.action][0]:'No action approved';
+ status.className='resolution-status'; evidenceState.className='resolution-evidence'; reopen.classList.add('hidden'); closure.disabled=true;
+ if(resolutionState.stage==='awaiting'){
+  status.textContent='Awaiting decision'; action.textContent=actionName; actionDetail.textContent='Choose a response to create a tracked resolution step.'; checkpoint.textContent='Gate appointment confirmation'; checkpointDetail.textContent='No external request has been sent in this prototype.'; evidenceState.innerHTML='<i class="hgi-stroke hgi-information-circle" aria-hidden="true"></i><span>Evidence state: waiting for an approved action or new verified event.</span>';
+ } else if(resolutionState.stage==='in-progress'){
+  status.textContent='Resolution in progress'; status.classList.add('in-progress'); action.textContent=actionName; actionDetail.textContent='Approved in this prototype; external execution remains simulated.'; checkpoint.textContent='Awaiting verified update'; checkpointDetail.textContent='Use the simulation control to represent a carrier or terminal confirmation.'; evidenceState.innerHTML='<i class="hgi-stroke hgi-time-02" aria-hidden="true"></i><span>Evidence state: action is tracked, but resolution cannot be closed until a verified update arrives.</span>';
+ } else if(resolutionState.stage==='ready'){
+  status.textContent='Ready for closure review'; status.classList.add('ready'); action.textContent=actionName; actionDetail.textContent='Approved action is progressing with a verified checkpoint.'; checkpoint.textContent='Gate appointment confirmed'; checkpointDetail.textContent='Verified terminal update received just now.'; evidenceState.classList.add('verified'); evidenceState.innerHTML='<i class="hgi-stroke hgi-checkmark-circle-02" aria-hidden="true"></i><span>Verified update: gate appointment is confirmed. Review the remaining closure criteria with the coordinator.</span>'; closure.disabled=false;
+ } else {
+  status.textContent='Closed · monitoring retained'; status.classList.add('closed'); action.textContent=actionName; actionDetail.textContent='Resolution was confirmed by the coordinator.'; checkpoint.textContent='Continuous monitoring'; checkpointDetail.textContent='Contradictory events will reopen this exception.'; evidenceState.classList.add('closed'); evidenceState.innerHTML='<i class="hgi-stroke hgi-checkmark-circle-02" aria-hidden="true"></i><span>Resolution criteria were confirmed. The full decision history remains available in Audit.</span>'; reopen.classList.remove('hidden');
+ }
+}
 function switchTab(name){ $$('.case-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name)); ['decision','evidence','timeline','audit'].forEach(t=>$(`#${t}-tab`).classList.toggle('hidden',t!==name)); }
 $$('.case-tabs button').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab)); $$('[data-tab-open]').forEach(b=>b.onclick=()=>switchTab(b.dataset.tabOpen));
 
@@ -129,12 +147,26 @@ function approveAction(){
 }
 $$(".approve-action").forEach(button=>button.onclick=e=>{e.stopPropagation();selectedAction=button.closest(".action-card").dataset.action;approveAction()});
 function executeAction(){
+ resolutionState={stage:'in-progress',action:selectedAction,verified:false};
+ addAudit(`Action approved: ${labels[selectedAction][0]}`);
+ renderResolution();
  $('#modal-content').innerHTML=`<p class="eyebrow">Execution in progress</p><h2>Coordinating approved action</h2><p>Creating the carrier task, reserving capacity and preparing stakeholder updates.</p><div class="progress-track"><i id="execution-progress"></i></div><div id="execution-status">Running prerequisite checks…</div>`;
  requestAnimationFrame(()=>$('#execution-progress').style.width='100%');
- setTimeout(()=>{audit.unshift([new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}),'Demo action simulated','user/sourav']);renderAudit();$('#modal-content').innerHTML=`<p class="eyebrow">Demo action completed</p><h2>Resolution is in progress</h2><p>${escapeHtml(labels[selectedAction][0])} was simulated. No carrier request or customer notification was sent.</p><div class="modal-summary"><strong>Example next checkpoint</strong><p>Gate appointment confirmation due in 45 minutes. A real integration would re-evaluate the exception when a new event arrives.</p></div><div class="modal-actions"><button class="ghost" id="view-audit">View audit</button><button class="primary" id="finish-execution">Continue monitoring</button></div>`;$('#view-audit').onclick=()=>{closeModal();switchTab('audit')};$('#finish-execution').onclick=()=>{closeModal();toast('Demo action recorded')};},1500);
+ setTimeout(()=>{$('#modal-content').innerHTML=`<p class="eyebrow">Prototype action tracked</p><h2>Resolution is in progress</h2><p>${escapeHtml(labels[selectedAction][0])} is now tracked as a simulated action. No carrier request or customer notification was sent.</p><div class="modal-summary"><strong>Next checkpoint</strong><p>Await a verified gate appointment confirmation before reviewing closure criteria.</p></div><div class="modal-actions"><button class="ghost" id="view-audit">View audit</button><button class="primary" id="finish-execution">Continue monitoring</button></div>`;$('#view-audit').onclick=()=>{closeModal();switchTab('audit')};$('#finish-execution').onclick=()=>{closeModal();toast('Action is tracked in Resolution progress')};},1500);
 }
 $('#request-info').onclick=()=>openModal(`<p class="eyebrow">Missing information</p><h2>Request terminal gate confirmation</h2><p>The AI can send a structured request to the terminal and carrier. The case will remain open and re-validate automatically when a reply arrives.</p><div class="modal-summary"><strong>Recipients</strong><p>Rotterdam Terminal Operations<br>Ocean carrier control desk</p></div><div class="modal-actions"><button class="ghost" onclick="document.querySelector('#modal-close').click()">Cancel</button><button class="primary" id="send-request">Send request</button></div>`);
-document.addEventListener('click',e=>{if(e.target?.id==='send-request'){closeModal();toast('Demo request prepared; no message was sent')}});
+document.addEventListener('click',e=>{if(e.target?.id==='send-request'){resolutionState={stage:'in-progress',action:'hold',verified:false};addAudit('Information request prepared: terminal gate confirmation');renderResolution();closeModal();toast('Demo request prepared; no message was sent')}});
+$('#simulate-update').onclick=()=>{
+ if(resolutionState.stage==='awaiting'){toast('Approve an action or prepare an information request first');return}
+ if(resolutionState.stage==='closed'){toast('The exception is closed. Reopen it if new evidence arrives.');return}
+ resolutionState.stage='ready';resolutionState.verified=true;addAudit('Verified terminal update received: gate appointment confirmed','system/event-correlation');timeline.unshift([clock(),'Verified update received','Terminal gate appointment confirmed; closure criteria can now be reviewed.']);renderTimeline();renderResolution();toast('Verified update added · closure review is now available');
+};
+$('#review-closure').onclick=()=>{
+ if(resolutionState.stage!=='ready')return;
+ openModal(`<p class="eyebrow">Closure review</p><h2>Confirm objective resolution criteria</h2><p>Close this exception only after the coordinator verifies every condition.</p><div class="modal-summary"><label class="confirm-check"><input type="checkbox" id="criteria-milestone"> Verified gate appointment is recorded</label><label class="confirm-check"><input type="checkbox" id="criteria-action"> Approved action is progressing as expected</label><label class="confirm-check"><input type="checkbox" id="criteria-risk"> Customer commitment risk is acceptable</label><label class="confirm-check"><input type="checkbox" id="criteria-alerts"> No active related alerts remain</label></div><div class="modal-actions"><button class="ghost" id="cancel-closure">Keep monitoring</button><button class="primary" id="confirm-closure">Confirm and close</button></div>`);
+ $('#cancel-closure').onclick=closeModal; $('#confirm-closure').onclick=()=>{const complete=['criteria-milestone','criteria-action','criteria-risk','criteria-alerts'].every(id=>$('#'+id).checked);if(!complete){toast('Confirm every resolution criterion before closing');return}resolutionState.stage='closed';addAudit('Coordinator confirmed resolution and closed exception');timeline.unshift([clock(),'Exception closed','Resolution criteria confirmed; outcome monitoring retained.']);renderTimeline();renderResolution();closeModal();toast('Exception closed · monitoring remains active');};
+};
+$('#reopen-case').onclick=()=>{resolutionState.stage='in-progress';resolutionState.verified=false;addAudit('Exception reopened after new information','system/event-correlation');timeline.unshift([clock(),'Exception reopened','New or contradictory information requires renewed monitoring.']);renderTimeline();renderResolution();toast('Exception reopened and returned to monitoring');};
 function overrideAi(){openModal(`<p class="eyebrow">Human override</p><h2>Correct the assessment or action</h2><p>Your correction will be preserved in the audit history and reviewed as a learning candidate after closure.</p><label>Actual cause<textarea style="width:100%;min-height:70px;margin-top:6px;border:1px solid #dce3e7;border-radius:8px;padding:10px">Terminal labor shortage</textarea></label><label style="display:block;margin-top:12px">Preferred action<textarea style="width:100%;min-height:70px;margin-top:6px;border:1px solid #dce3e7;border-radius:8px;padding:10px">Escalate to regional operations before committing cost</textarea></label><div class="modal-actions"><button class="ghost" onclick="document.querySelector('#modal-close').click()">Cancel</button><button class="primary" id="apply-override">Update recommendation</button></div>`) }
 $$('.override-ai').forEach(button=>button.onclick=e=>{e.stopPropagation();selectedAction=button.closest('.action-card').dataset.action;overrideAi()});
 document.addEventListener('click',e=>{if(e.target?.id==='apply-override'){audit.unshift([new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}),'Coordinator overrode AI assessment','user/sourav']);renderAudit();closeModal();toast('Override recorded · Recommendation refreshed')}});
@@ -167,5 +199,5 @@ document.addEventListener('click',e=>{const button=e.target.closest('.pagination
 document.addEventListener('click',()=>{$('#filter-popover').classList.add('hidden');$('#filter-toggle').setAttribute('aria-expanded','false');closeCaseMenu()});
 $$('.nav-item').forEach(n=>n.onclick=()=>{ $$('.nav-item').forEach(x=>x.classList.remove('active'));n.classList.add('active');if(n.dataset.view!=='inbox')toast(`${n.textContent.trim()} view is represented in the active case prototype`);});
 $$('.top-tab').forEach(n=>n.onclick=()=>{ $$('.top-tab').forEach(x=>x.classList.remove('active'));n.classList.add('active');if(n.dataset.view!=='inbox')toast(`${n.textContent.trim()} view is represented in the active case prototype`);});
-renderExceptions();renderEvidence();renderTimeline();renderAudit();
+renderExceptions();renderEvidence();renderTimeline();renderAudit();renderResolution();
 
