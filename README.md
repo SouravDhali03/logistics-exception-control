@@ -2,7 +2,9 @@
 
 An AI-assisted logistics control tower for detecting, prioritizing, investigating, and resolving shipment exceptions with clear human oversight.
 
-**Live demo:** [logistics-exception-control.sourav-dhali.chatgpt.site](https://logistics-exception-control.sourav-dhali.chatgpt.site/)
+**Live demo:** [logistics-exception-control-20261028.sourav-dhali.chatgpt.site](https://logistics-exception-control-20261028.sourav-dhali.chatgpt.site/)
+
+> The demo is privately deployed. Access is limited to the site owner unless sharing is enabled in Sites.
 
 ## Overview
 
@@ -75,6 +77,10 @@ python3 -m http.server 4173 --directory dist
 ```
 
 Then open [http://127.0.0.1:4173](http://127.0.0.1:4173).
+
+## Deployment
+
+The site is deployed as a private static Site. The deployment packages the contents of `dist/`; no build step, server runtime, or environment variables are required.
 
 ## Prototype scope
 
