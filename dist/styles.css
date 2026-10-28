@@ -885,7 +885,7 @@ body *:not(.hgi-stroke){
   color:#198754;
 }
 .utility-network-state b{display:block;width:10px;height:10px;background:#198754}
-.queue-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 22px;border-top:1px solid #e1e3e5;background:#fff;color:var(--body);font-size:14px}
+.queue-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 22px 14px;border-top:1px solid #e1e3e5;background:#fff;color:var(--body);font-size:14px}
 .exception-row[hidden]{display:none!important}
 .queue-pagination-summary{color:var(--mute);font-size:14px}
 .queue-pagination-controls{display:flex;align-items:center;gap:4px}
@@ -893,7 +893,8 @@ body *:not(.hgi-stroke){
 .pagination-btn:hover:not(:disabled){background:var(--canvas-soft);border-color:var(--hairline)}
 .pagination-btn.active{background:var(--primary);color:#fff}
 .pagination-btn:disabled{color:#b7b7b7;cursor:not-allowed}
-@media(max-width:620px){.queue-pagination{padding:12px 16px}.queue-pagination-summary{font-size:12px}.pagination-btn{min-width:28px;height:28px;font-size:12px}}
+@media(max-width:620px){.queue-pagination{padding:0 16px 12px}.queue-pagination-summary{font-size:12px}.pagination-btn{min-width:28px;height:28px;font-size:12px}}
+.page-utility{height:64px!important;min-height:64px!important}
 .page-utility .hero-actions{gap:8px!important}
 .page-utility .hero-notifications,.page-utility .hero-avatar{
   width:36px!important;
