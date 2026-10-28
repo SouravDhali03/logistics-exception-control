@@ -37,7 +37,7 @@ let selectedAction='expedite';
 let currentFilter='all';
 let selectedId='EXC-2481';
 let currentPage=1;
-const pageSize=10;
+const pageSize=6;
 
 const $=s=>document.querySelector(s)||{onclick:null,setAttribute(){},classList:{add(){},remove(){},toggle(){return false}}}, $$=s=>[...document.querySelectorAll(s)];
 const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
