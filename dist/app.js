@@ -75,7 +75,7 @@ function selectException(id,openDrawer=true){
  }
  const sample=id==='EXC-2481';
  $('#case-title').textContent=e.title; $('#case-meta').textContent=`${e.id} · ${e.route}`; $('#priority-badge').textContent=`${e.p} ${priorityLabel(e.p)}`; $('#priority-badge').className='badge '+({P1:'critical',P2:'uncertainty',P3:'owner'}[e.p]); $('#uncertainty-badge').textContent=e.uncertainty; $('#owner-badge').textContent=e.owner==='You'?'Assigned to you':`Owner: ${e.owner}`;
- $('.status-strip').classList.toggle('hidden',!sample); $('.actions-section').classList.toggle('hidden',!sample); $('.approval-bar').classList.toggle('hidden',!sample); $('.evidence-row').classList.toggle('hidden',!sample);
+ $('.status-strip').classList.toggle('hidden',!sample); $('.actions-section').classList.toggle('hidden',!sample); $('.evidence-row').classList.toggle('hidden',!sample);
  $$('.case-tabs button:not([data-tab="decision"])').forEach(b=>b.classList.toggle('hidden',!sample)); switchTab('decision');
  $('#assessment-title').textContent=sample?'Delivery commitment is likely to be missed':'Assessment needs review'; $('#assessment-confidence').textContent=sample?'82% confidence':'Unverified';
  if(!sample){ $('#what-happened').textContent=e.detail; $('#likely-cause').textContent='Not yet assessed.'; $('#business-impact').textContent=`${e.route} · ${priorityLabel(e.p)} priority`; $('#missing-data').textContent='Supporting evidence and partner confirmation.'; }
@@ -88,7 +88,7 @@ function switchTab(name){ $$('.case-tabs button').forEach(b=>b.classList.toggle(
 $$('.case-tabs button').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab)); $$('[data-tab-open]').forEach(b=>b.onclick=()=>switchTab(b.dataset.tabOpen));
 
 const labels={expedite:['Expedite by dedicated truck','Additional confirmation required · Estimated cost $4,850'],rebook:['Rebook next rail departure','Low-risk approved action · Estimated cost $620'],hold:['Hold and continue monitoring','Low-risk approved action · No added cost']};
-$$('.action-card').forEach(card=>card.onclick=e=>{if(e.target.closest('button'))return; selectedAction=card.dataset.action; $$('.action-card').forEach(x=>x.classList.toggle('selected',x===card)); $('#selected-label').textContent=labels[selectedAction][0]; $('#approval-note').textContent=labels[selectedAction][1]; $$('.approve-action').forEach(b=>b.textContent=card.dataset.risk==='high'?'Review and approve':'Approve action');});
+$$('.action-card').forEach(card=>card.onclick=e=>{if(e.target.closest('button'))return; selectedAction=card.dataset.action; $$('.action-card').forEach(x=>x.classList.toggle('selected',x===card)); $$('.approve-action').forEach(b=>b.textContent=card.dataset.risk==='high'?'Review and approve':'Approve action');});
 
 function openModal(html){$('#modal-content').innerHTML=html;$('#modal-backdrop').classList.remove('hidden');}
 function closeModal(){$('#modal-backdrop').classList.add('hidden');}

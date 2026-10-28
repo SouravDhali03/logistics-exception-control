@@ -588,6 +588,14 @@ main{
 .case-panel .action-card.selected{
   box-shadow:none!important;
 }
+.action-card-actions{
+  flex-direction:row!important;
+  align-items:center!important;
+}
+.action-card-actions button{
+  flex:1 1 0!important;
+  width:auto!important;
+}
 .drawer-action-controls button{
   width:min(100%,180px)!important;
   min-height:40px!important;
