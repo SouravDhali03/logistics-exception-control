@@ -11,7 +11,17 @@
 <body>
   <div class="app-shell">
     <aside class="sidebar">
-      <div class="brand"><span class="brand-mark">TC</span><span>Tiger Control</span></div>
+      <div class="brand">
+        <span class="brand-mark logo-mark" aria-label="Logistics logo">
+          <svg viewBox="0 0 24 24" role="img" aria-labelledby="logistics-logo-title">
+            <title id="logistics-logo-title">Logistics</title>
+            <path d="M6 5v10.5A3.5 3.5 0 0 0 9.5 19H18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="6" cy="5" r="2" fill="currentColor"/>
+            <path d="m15 14 3 3-3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="brand-name">Logistics</span>
+      </div>
       <nav aria-label="Primary">
         <button class="nav-item active" data-view="inbox"><span class="nav-icon" aria-hidden="true"><i class="hgi-stroke hgi-inbox"></i></span>Exception inbox<span class="nav-count">6</span></button>
         <button class="nav-item" data-view="monitoring"><span class="nav-icon" aria-hidden="true"><i class="hgi-stroke hgi-activity-01"></i></span>Live monitoring</button>
@@ -24,7 +34,7 @@
     <main>
       <div class="page-utility" aria-label="Global actions"><div class="hero-actions"><button class="hero-notifications icon-button" id="notifications" aria-label="Notifications"><i class="hgi-stroke hgi-notification-02" aria-hidden="true"></i><b>3</b></button><button class="hero-avatar" aria-label="Account menu">SD</button></div></div>
       <section class="welcome-hero" aria-label="Welcome and network status">
-        <div class="hero-copy"><p class="eyebrow">Monday · 08:42</p><h2>Good morning, Sourav</h2><p>Here’s what needs attention across your shipment network.</p><div class="hero-tags"><span>6 open exceptions</span><span>1 critical</span><span>$184k at risk</span></div></div>
+        <div class="hero-copy"><p class="eyebrow">Monday · 08:42</p><h2>Good morning, Sourav</h2><p>Here’s what needs attention across your shipment network.</p></div>
         <div class="hero-visual" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
         <div class="hero-status"><span>Network status</span><strong><b></b> Stable</strong><small>24 sources connected</small></div>
       </section>
@@ -43,8 +53,8 @@
       <section class="kpis" aria-label="Operational summary">
         <article><span>Open exceptions</span><strong id="open-count">6</strong><em class="up">Sample queue</em></article>
         <article><span>Critical</span><strong id="critical-count">1</strong><em>Needs attention</em></article>
-        <article><span>At-risk value</span><strong>$184k</strong><em>Across 4 shipments</em></article>
-        <article><span>Median response</span><strong>8m</strong><em class="down"><i class="hgi-stroke hgi-arrow-down-01" aria-hidden="true"></i> 18% this week</em></article>
+            <article class="at-risk-kpi"><span>At-risk value</span><strong>$184k</strong><em>Across 4 shipments</em></article>
+            <article><span>Median response</span><strong>8m</strong><em class="down"><i class="hgi-stroke hgi-chevron-down-01" aria-hidden="true"></i> 18% this week</em></article>
       </section>
 
       <section class="workspace">

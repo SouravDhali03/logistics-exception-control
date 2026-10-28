@@ -857,3 +857,39 @@ body *:not(.hgi-stroke){
   height:16px;
   margin:0;
 }
+
+/* Sidebar brand and queue headers. Keep these values explicit so the brand
+   remains legible and the table's column labels match the requested 14px
+   reading scale across responsive layouts. */
+.brand .logo-mark{
+  color:#fff!important;
+  background:#0f62fe!important;
+  display:grid!important;
+  place-items:center!important;
+}
+.brand .logo-mark svg{
+  width:18px;
+  height:18px;
+  display:block;
+}
+.brand .brand-name{
+  font-family:"Neue Haas Grotesk Display",Arial,sans-serif!important;
+  font-size:18px!important;
+  font-weight:450!important;
+  letter-spacing:0!important;
+}
+.exception-table-head,
+.exception-table-head > *{
+  font-size:14px!important;
+}
+
+/* Highlight financial exposure with the same P1 risk treatment as the queue. */
+.kpis article.at-risk-kpi{
+  background:#fff1f1!important;
+  border-color:#da1e28!important;
+}
+.kpis article.at-risk-kpi > span,
+.kpis article.at-risk-kpi > strong,
+.kpis article.at-risk-kpi > em{
+  color:#da1e28!important;
+}
