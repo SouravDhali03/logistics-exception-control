@@ -757,3 +757,13 @@ body,
 body *:not(.hgi-stroke){
   font-family:"Neue Haas Grotesk Display","NeueHaasGrotesk Display",Helvetica,Arial,sans-serif!important;
 }
+/* Owner assignment and metadata copy controls */
+.owner-picker{position:relative;display:inline-flex}
+.owner-trigger{display:inline-flex;align-items:center;gap:5px;cursor:pointer;font:inherit}
+.owner-trigger .hgi-stroke{font-size:11px}
+.owner-menu{position:absolute;z-index:40;top:calc(100% + 6px);right:0;min-width:140px;padding:5px;background:var(--canvas);border:1px solid var(--hairline);border-radius:10px;box-shadow:var(--shadow-modal)}
+.owner-menu button{display:block;width:100%;border:0;background:transparent;color:var(--ink);padding:8px 10px;border-radius:6px;text-align:left;font-size:12px;cursor:pointer}
+.owner-menu button:hover{background:var(--canvas-soft-2)}
+#case-meta{display:flex;align-items:center;gap:6px}
+.meta-copy{display:inline-grid;place-items:center;width:22px;height:22px;padding:0;border:0;border-radius:6px;background:transparent;color:var(--mute);cursor:pointer}
+.meta-copy:hover{background:var(--canvas-soft-2);color:var(--ink)}

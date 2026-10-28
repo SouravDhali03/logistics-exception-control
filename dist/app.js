@@ -74,7 +74,7 @@ function selectException(id,openDrawer=true){
   document.documentElement.classList.add('drawer-open');
  }
  const sample=id==='EXC-2481';
- $('#case-title').textContent=e.title; $('#case-meta').textContent=`${e.id} · ${e.route}`; $('#priority-badge').textContent=`${e.p} ${priorityLabel(e.p)}`; $('#priority-badge').className='badge '+({P1:'critical',P2:'uncertainty',P3:'owner'}[e.p]); $('#uncertainty-badge').textContent=e.uncertainty; $('#owner-badge').textContent=e.owner==='You'?'Assigned to you':`Owner: ${e.owner}`;
+ $('#case-title').textContent=e.title; $('#case-meta').innerHTML=`${escapeHtml(e.id)} · ${escapeHtml(e.route)} <button class="meta-copy" id="copy-meta" aria-label="Copy exception details" title="Copy exception details"><i class="hgi-stroke hgi-copy-01" aria-hidden="true"></i></button>`; $('#priority-badge').textContent=`${e.p} ${priorityLabel(e.p)}`; $('#priority-badge').className='badge '+({P1:'critical',P2:'uncertainty',P3:'owner'}[e.p]); $('#uncertainty-badge').textContent=e.uncertainty; $('#owner-badge').innerHTML=`${e.owner==='You'?'Assigned to you':`Owner: ${escapeHtml(e.owner)}`} <i class="hgi-stroke hgi-arrow-down-01" aria-hidden="true"></i>`;
  $('.status-strip').classList.toggle('hidden',!sample); $('.actions-section').classList.toggle('hidden',!sample); $('.evidence-row').classList.toggle('hidden',!sample);
  $$('.case-tabs button:not([data-tab="decision"])').forEach(b=>b.classList.toggle('hidden',!sample)); switchTab('decision');
  $('#assessment-title').textContent=sample?'Delivery commitment is likely to be missed':'Assessment needs review'; $('#assessment-confidence').textContent=sample?'82% confidence':'Unverified';
@@ -128,6 +128,11 @@ $('#case-menu').onclick=e=>e.stopPropagation();
 $('#assign-case').onclick=()=>{const item=exceptions.find(x=>x.id===selectedId);item.owner='You';(item.events??=[]).unshift('Assigned to you');saveCases();closeCaseMenu();renderExceptions();toast('Exception assigned to you')};
 $('#case-audit').onclick=()=>{const item=exceptions.find(x=>x.id===selectedId);closeCaseMenu();if(item.id==='EXC-2481'){switchTab('audit');return}const events=item.events?.length?item.events:['No recorded actions yet'];openModal(`<p class="eyebrow">Case history</p><h2>Audit history</h2><p>${escapeHtml(item.id)} · ${escapeHtml(item.title)}</p><div class="modal-summary">${events.map(event=>`<p>${escapeHtml(event)}</p>`).join('')}</div><p><small>Demo history is saved only in this browser.</small></p>`)};
 $('#copy-case').onclick=async()=>{closeCaseMenu();try{await navigator.clipboard.writeText(selectedId);toast('Exception ID copied')}catch(_){openModal(`<p class="eyebrow">Exception ID</p><h2>${escapeHtml(selectedId)}</h2><p>Select and copy this ID.</p>`)}};
+function closeOwnerMenu(){ $('#owner-menu').classList.add('hidden'); $('#owner-badge').setAttribute('aria-expanded','false'); }
+$('#owner-badge').onclick=e=>{e.stopPropagation();const open=$('#owner-menu').classList.toggle('hidden')===false;$('#owner-badge').setAttribute('aria-expanded',String(open));};
+$('#owner-menu').onclick=e=>{e.stopPropagation();const option=e.target.closest('[data-owner]');if(!option)return;const item=exceptions.find(x=>x.id===selectedId);if(!item)return;item.owner=option.dataset.owner;(item.events??=[]).unshift(`Assigned to ${item.owner}`);saveCases();closeOwnerMenu();renderExceptions();toast(`Assigned to ${item.owner}`);};
+document.addEventListener('click',()=>closeOwnerMenu());
+document.addEventListener('click',e=>{if(e.target.closest('#copy-meta')){const item=exceptions.find(x=>x.id===selectedId);if(!item)return;const text=`${item.id} · ${item.route}`;navigator.clipboard?.writeText(text).then(()=>toast('Exception details copied')).catch(()=>toast(text));}});
 $('#notifications').onclick=()=>toast('3 notifications · 1 requires approval');
 $('#filter-toggle').onclick=e=>{
  e.stopPropagation();
