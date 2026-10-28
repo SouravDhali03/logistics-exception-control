@@ -818,7 +818,7 @@ body *:not(.hgi-stroke){
   margin-top:20px;
   padding:16px;
   border:1px solid var(--hairline)!important;
-  border-left:3px solid #000!important;
+  border-left:1px solid var(--hairline)!important;
   border-radius:12px!important;
   background:#fbfbf5!important;
 }
