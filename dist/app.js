@@ -4,9 +4,13 @@ let exceptions=[
  {id:'EXC-2476',p:'P2',title:'Customs documents incomplete',route:'Dhaka → Toronto',detail:'Commercial invoice mismatch',time:'26m',owner:'You',uncertainty:'Possible · 64%'},
  {id:'EXC-2471',p:'P3',title:'Tracking signal stale',route:'Shenzhen → Long Beach',detail:'No carrier event for 9h',time:'1h',owner:'Unassigned',uncertainty:'Unknown'},
  {id:'EXC-2468',p:'P3',title:'Warehouse handoff delayed',route:'Hamburg → Prague',detail:'Pickup missed by 46 min',time:'2h',owner:'Nadia',uncertainty:'Likely · 71%'},
- {id:'EXC-2464',p:'P3',title:'Delivery appointment at risk',route:'Antwerp → Lyon',detail:'Driver hours limit approaching',time:'3h',owner:'You',uncertainty:'Possible · 58%'}
+ {id:'EXC-2464',p:'P3',title:'Delivery appointment at risk',route:'Antwerp → Lyon',detail:'Driver hours limit approaching',time:'3h',owner:'You',uncertainty:'Possible · 58%'},
+ {id:'EXC-2461',p:'P2',title:'Container release delayed',route:'Busan → Seattle',detail:'Customs release pending for 6h',time:'4h',owner:'Mina',uncertainty:'Possible · 61%'},
+ {id:'EXC-2459',p:'P3',title:'Proof of delivery missing',route:'Paris → Madrid',detail:'Signed receipt not uploaded',time:'5h',owner:'Unassigned',uncertainty:'Unknown'},
+ {id:'EXC-2458',p:'P2',title:'Carrier capacity reduced',route:'Los Angeles → Dallas',detail:'Two booked trailers cancelled',time:'6h',owner:'You',uncertainty:'Likely · 74%'},
+ {id:'EXC-2456',p:'P3',title:'Temperature logger offline',route:'Osaka → Vancouver',detail:'No telemetry received for 3h',time:'7h',owner:'Nadia',uncertainty:'Possible · 55%'}
 ];
-try { const saved=JSON.parse(localStorage.getItem('tiger-exceptions-v1')); if(Array.isArray(saved)&&saved.length) exceptions=saved; } catch (_) {}
+try { const saved=JSON.parse(localStorage.getItem('tiger-exceptions-v1')); if(Array.isArray(saved)&&saved.length) exceptions=[...saved,...exceptions.filter(item=>!saved.some(savedItem=>savedItem.id===item.id))]; } catch (_) {}
 const evidence=[
  ['CR','Carrier event feed','Discharge estimate changed 14:20 → 09:15 (+19h)','Verified · 2m'],
  ['TM','Terminal milestone','Crane outage recorded at berth 4','Verified · 18m'],
@@ -32,6 +36,8 @@ let audit=[
 let selectedAction='expedite';
 let currentFilter='all';
 let selectedId='EXC-2481';
+let currentPage=1;
+const pageSize=6;
 
 const $=s=>document.querySelector(s)||{onclick:null,setAttribute(){},classList:{add(){},remove(){},toggle(){return false}}}, $$=s=>[...document.querySelectorAll(s)];
 const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -42,9 +48,23 @@ const transportMode=id=>({
  'EXC-2476':['plane','✈','Air freight'],
  'EXC-2471':['ship','⚓','Ocean freight'],
  'EXC-2468':['truck','▣','Road freight'],
- 'EXC-2464':['truck','▣','Road freight']
+ 'EXC-2464':['truck','▣','Road freight'],
+ 'EXC-2461':['ship','⚓','Ocean freight'],
+ 'EXC-2459':['truck','▣','Road freight'],
+ 'EXC-2458':['truck','▣','Road freight'],
+ 'EXC-2456':['plane','✈','Air freight']
 }[id]||['truck','▣','Road freight']);
 function saveCases(){try{localStorage.setItem('tiger-exceptions-v1',JSON.stringify(exceptions));}catch(_){toast('Could not save locally; this change lasts until the page closes.')}}
+function applyPagination(){
+ const rows=$$('#exception-list .exception-row');
+ const totalPages=Math.max(1,Math.ceil(rows.length/pageSize));
+ currentPage=Math.min(currentPage,totalPages);
+ const start=(currentPage-1)*pageSize;
+ rows.forEach((row,index)=>{row.hidden=index<start||index>=start+pageSize});
+ const from=rows.length?start+1:0;
+ const to=Math.min(start+pageSize,rows.length);
+ $('#queue-pagination').innerHTML=rows.length?`<span class="queue-pagination-summary">${from}–${to} of ${rows.length} exceptions</span><span class="queue-pagination-controls"><button class="pagination-btn" data-page="${currentPage-1}" aria-label="Previous page" ${currentPage===1?'disabled':''}>‹</button>${Array.from({length:totalPages},(_,i)=>`<button class="pagination-btn ${i+1===currentPage?'active':''}" data-page="${i+1}" aria-label="Page ${i+1}">${i+1}</button>`).join('')}<button class="pagination-btn" data-page="${currentPage+1}" aria-label="Next page" ${currentPage===totalPages?'disabled':''}>›</button></span>`:'';
+}
 function renderExceptions(){
  const visible=exceptions.filter(e=>currentFilter==='all'||(currentFilter==='critical'&&e.p==='P1')||(currentFilter==='mine'&&e.owner==='You')).sort((a,b)=>a.p.localeCompare(b.p));
  if(visible.length&&!visible.some(e=>e.id===selectedId)) selectedId=visible[0].id;
@@ -54,10 +74,12 @@ function renderExceptions(){
  $$('.chip').forEach(b=>{b.textContent=({all:'All',critical:'Critical',mine:'Mine'}[b.dataset.filter])+' '+counts[b.dataset.filter]});
  $$('.filter-option').forEach(b=>{b.querySelector('b').textContent=counts[b.dataset.filter]});
  $('#open-count').textContent=counts.all; $('#critical-count').textContent=counts.critical; $('.nav-item[data-view="inbox"] .nav-count').textContent=counts.all;
+ applyPagination();
  if(visible.length)selectException(selectedId,false);
 }
 function setFilter(filter){
  currentFilter=filter;
+ currentPage=1;
  $$('.chip').forEach(button=>button.classList.toggle('active',button.dataset.filter===filter));
  $$('.filter-option').forEach(button=>button.classList.toggle('active',button.dataset.filter===filter));
  renderExceptions();
@@ -141,6 +163,7 @@ $('#filter-toggle').onclick=e=>{
 $('#filter-popover').onclick=e=>e.stopPropagation();
 $$('.chip').forEach(button=>button.onclick=()=>setFilter(button.dataset.filter));
 $$('.filter-option').forEach(button=>button.onclick=()=>setFilter(button.dataset.filter));
+document.addEventListener('click',e=>{const button=e.target.closest('.pagination-btn');if(!button||button.disabled)return;const page=Number(button.dataset.page);if(!page)return;currentPage=page;renderExceptions();});
 document.addEventListener('click',()=>{$('#filter-popover').classList.add('hidden');$('#filter-toggle').setAttribute('aria-expanded','false');closeCaseMenu()});
 $$('.nav-item').forEach(n=>n.onclick=()=>{ $$('.nav-item').forEach(x=>x.classList.remove('active'));n.classList.add('active');if(n.dataset.view!=='inbox')toast(`${n.textContent.trim()} view is represented in the active case prototype`);});
 $$('.top-tab').forEach(n=>n.onclick=()=>{ $$('.top-tab').forEach(x=>x.classList.remove('active'));n.classList.add('active');if(n.dataset.view!=='inbox')toast(`${n.textContent.trim()} view is represented in the active case prototype`);});
