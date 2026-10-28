@@ -627,8 +627,8 @@ main{
 .case-panel .decision-grid{overflow:hidden!important}
 .case-panel .evidence-row{overflow:hidden!important}
 
-/* Geist is the single product typeface. Keep Hugeicons on their own icon font. */
+/* Neue Haas Grotesk Display is the single product typeface. Keep Hugeicons on their own icon font. */
 body,
 body *:not(.hgi-stroke){
-  font-family:Geist,Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+  font-family:"Neue Haas Grotesk Display","NeueHaasGrotesk Display",Helvetica,Arial,sans-serif!important;
 }
