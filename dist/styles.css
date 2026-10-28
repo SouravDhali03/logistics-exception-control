@@ -886,6 +886,7 @@ body *:not(.hgi-stroke){
 }
 .utility-network-state b{display:block;width:10px;height:10px;background:#198754}
 .queue-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 22px;border-top:1px solid #e1e3e5;background:#fff;color:var(--body);font-size:14px}
+.exception-row[hidden]{display:none!important}
 .queue-pagination-summary{color:var(--mute);font-size:14px}
 .queue-pagination-controls{display:flex;align-items:center;gap:4px}
 .pagination-btn{min-width:30px;height:30px;padding:0 8px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--body);font-size:14px;cursor:pointer}
@@ -999,3 +1000,4 @@ body *:not(.hgi-stroke){
 .kpis article.at-risk-kpi > em{
   color:#da1e28!important;
 }
+
