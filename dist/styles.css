@@ -980,6 +980,11 @@ body *:not(.hgi-stroke){
   height:18px;
   display:block;
 }
+.brand .logo-mark img{
+  width:28px;
+  height:28px;
+  display:block;
+}
 .brand .brand-name{
   font-family:"Neue Haas Grotesk Display",Arial,sans-serif!important;
   font-size:18px!important;
