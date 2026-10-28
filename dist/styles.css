@@ -413,6 +413,7 @@ html,body{background:var(--canvas-soft)!important}
   background:#f6f6f2!important;
 }
 .sidebar{
+  display:flex!important;
   position:sticky!important;
   top:0!important;
   height:100vh!important;
