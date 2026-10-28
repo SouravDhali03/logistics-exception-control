@@ -386,3 +386,22 @@ html,body{background:var(--canvas-soft)!important}
   .kpis article{border-radius:10px!important}
   .workspace{border-radius:12px!important}
 }
+
+/* Final polish from review: keep route data on the table surface, center the queue
+   header controls, and use a fully circular filter affordance. */
+.route-journey{
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  padding:0!important;
+}
+.panel-head{align-items:center!important}
+.panel-head>div:first-child{display:flex;flex-direction:column;justify-content:center!important}
+#filter-toggle{
+  border-radius:50%!important;
+  width:36px!important;
+  height:36px!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+}
