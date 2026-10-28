@@ -902,7 +902,7 @@ body *:not(.hgi-stroke){
    closure visible in the same decision workspace. */
 .evidence-type{display:inline-flex!important;align-items:center;margin-left:6px;padding:2px 6px;border-radius:999px!important;font-size:10px!important;font-weight:500!important;letter-spacing:0!important;text-transform:none!important;vertical-align:1px}
 .evidence-type.fact{background:#defbe6;color:#0e6027}.evidence-type.inference{background:#edf5ff;color:#0043ce}.evidence-type.gap{background:#fff1f1;color:#a2191f}
-.resolution-section{margin-top:26px!important;border-top:3px solid #0f62fe!important}
+.resolution-section{margin-top:26px!important;border-top:0!important;box-shadow:none!important}
 .resolution-status{display:inline-flex;align-items:center;min-height:28px;padding:4px 10px;border-radius:999px!important;background:#f4f4f4;color:#525252;font-size:12px;font-weight:500;white-space:nowrap}
 .resolution-status.in-progress{background:#edf5ff;color:#0043ce}.resolution-status.ready{background:#defbe6;color:#0e6027}.resolution-status.closed{background:#e8daff;color:#6929c4}
 .resolution-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid #e1e3e5;border-radius:10px!important;overflow:hidden}
