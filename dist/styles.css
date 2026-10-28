@@ -559,6 +559,131 @@ main{
   margin-top:12px!important;
 }
 
+/* Figma homepage frame 156:6 — desktop composition. The existing HTML and
+   event hooks stay intact; these rules only bring the page geometry and visual
+   hierarchy in line with the approved frame. */
+@media(min-width:821px){
+  html,body{background:#1a1b1c!important}
+  .app-shell{
+    grid-template-columns:280px minmax(0,1fr)!important;
+    gap:0!important;
+    padding:8px!important;
+    min-height:100vh!important;
+    background:#1a1b1c!important;
+  }
+  .sidebar{
+    width:260px!important;
+    height:calc(100dvh - 16px)!important;
+    min-height:0!important;
+    margin:0!important;
+    border:0!important;
+    border-radius:16px!important;
+    padding:24px 16px 18px!important;
+    top:8px!important;
+    background:#1f1f1f!important;
+  }
+  main{
+    min-height:calc(100dvh - 16px)!important;
+    height:calc(100dvh - 16px)!important;
+    margin:0!important;
+    padding:0 0 40px!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    border-radius:16px!important;
+    background:#fff!important;
+  }
+  .global-utility{display:none!important}
+  .welcome-hero{
+    position:relative!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:24px!important;
+    width:auto!important;
+    height:260px!important;
+    min-height:260px!important;
+    margin:24px 24px 0!important;
+    padding:12px 27px 0!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+    border:1px solid #dbdee3!important;
+    border-radius:16px!important;
+    background:#fff!important;
+    color:#16191d!important;
+    box-shadow:0 2px 8px rgba(22,25,29,.04)!important;
+  }
+  .welcome-hero:after{display:none!important}
+  .welcome-hero .hero-actions{
+    position:static!important;
+    width:100%!important;
+    height:36px!important;
+    display:flex!important;
+    justify-content:flex-end!important;
+    align-items:center!important;
+    gap:10px!important;
+    z-index:2!important;
+  }
+  .welcome-hero .hero-notifications,
+  .welcome-hero .hero-avatar{
+    position:relative!important;
+    top:auto!important;
+    right:auto!important;
+    width:36px!important;
+    height:36px!important;
+    border:1px solid #dbdee3!important;
+    border-radius:999px!important;
+    background:#fff!important;
+    color:#16191d!important;
+    box-shadow:none!important;
+  }
+  .welcome-hero .hero-notifications b{border-color:#fff!important}
+  .welcome-hero .hero-copy{
+    position:relative!important;
+    z-index:1!important;
+    width:calc(100% - 220px)!important;
+    padding:0!important;
+    color:#16191d!important;
+  }
+  .welcome-hero .hero-copy .eyebrow{color:#61666e!important}
+  .welcome-hero .hero-copy h2{font-size:32px!important;line-height:1.15!important;font-weight:300!important;letter-spacing:-.8px!important;color:#16191d!important;margin:4px 0 8px!important}
+  .welcome-hero .hero-copy>p:not(.eyebrow){font-size:16px!important;color:#4d535b!important}
+  .welcome-hero .hero-tags{margin-top:18px!important;gap:8px!important}
+  .welcome-hero .hero-tags span{font-size:12px!important;padding:6px 10px!important;border:1px solid #c9cdd3!important;background:#fff!important;color:#30343a!important;border-radius:999px!important}
+  .welcome-hero .hero-visual{display:none!important}
+  .welcome-hero .hero-status{
+    position:absolute!important;
+    top:84px!important;
+    right:27px!important;
+    width:175px!important;
+    min-width:175px!important;
+    height:112px!important;
+    padding:0 0 0 24px!important;
+    border-left:1px solid #dbdee3!important;
+    justify-content:center!important;
+    color:#16191d!important;
+  }
+  .welcome-hero .hero-status>span,
+  .welcome-hero .hero-status small{font-size:12px!important;color:#61666e!important}
+  .welcome-hero .hero-status strong{font-size:22px!important;color:#16191d!important;margin:7px 0!important}
+  .welcome-hero .hero-status strong b{background:#24a148!important;box-shadow:0 0 0 4px rgba(36,161,72,.12)!important}
+  .hero-tabs{display:none!important}
+  .topbar,.kpis,.workspace{margin-left:24px!important;margin-right:24px!important}
+  .topbar{margin-top:32px!important;margin-bottom:20px!important}
+  .topbar-brand h1{font-size:20px!important;font-weight:400!important;letter-spacing:0!important}
+  .topbar-brand .brand-mark{display:none!important}
+  .kpis{gap:24px!important;margin-bottom:32px!important}
+  .kpis article{min-height:86px!important;padding:11px 14px!important;border-radius:16px!important;border:1px solid #dbdee3!important;background:#fff!important;box-shadow:none!important}
+  .kpis article>span,.kpis article>em{font-size:12px!important}
+  .kpis article>strong{font-size:28px!important;font-weight:400!important}
+  .panel-head{min-height:37px!important;margin-bottom:16px!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important}
+  .panel-head h2{font-size:20px!important;font-weight:400!important}
+  .exception-list,#exception-list{border-radius:16px!important;box-shadow:none!important}
+}
+
+@media(max-width:820px){
+  .welcome-hero .hero-actions{position:absolute!important;top:16px!important;right:16px!important}
+}
+
 /* Keep the queue title lightweight and edge-to-edge above the table. */
 .queue-panel>.panel-head{
   background:transparent!important;
