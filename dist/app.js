@@ -33,7 +33,7 @@ let selectedAction='expedite';
 let currentFilter='all';
 let selectedId='EXC-2481';
 
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const $=s=>document.querySelector(s)||{onclick:null,setAttribute(){},classList:{add(){},remove(){},toggle(){return false}}}, $$=s=>[...document.querySelectorAll(s)];
 const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const priorityLabel=p=>({P1:'Critical',P2:'High',P3:'Medium'}[p]||'Medium');
 const transportMode=id=>({
@@ -122,9 +122,7 @@ $('#new-exception').onclick=()=>{
  $('#cancel-new-case').onclick=closeModal;
  $('#new-case-form').onsubmit=e=>{e.preventDefault();const data=new FormData(e.currentTarget);const item={id:`EXC-${Date.now().toString().slice(-8)}`,p:data.get('priority'),title:String(data.get('title')).trim(),route:`${String(data.get('origin')).trim()} → ${String(data.get('destination')).trim()}`,detail:String(data.get('detail')).trim(),time:'Now',owner:'You',uncertainty:'Unknown · Unverified',events:['Exception created manually in this browser']};if(!item.title||!item.detail||!String(data.get('origin')).trim()||!String(data.get('destination')).trim()){toast('Complete all fields before creating the exception');return}exceptions.unshift(item);selectedId=item.id;currentFilter='all';$$('.chip,.filter-option').forEach(b=>b.classList.toggle('active',b.dataset.filter==='all'));saveCases();renderExceptions();closeModal();toast('Exception created in your browser');};
 };
-function closeCaseMenu(){$('#case-menu').classList.add('hidden');$('#more-menu').setAttribute('aria-expanded','false')}
-$('#more-menu').onclick=e=>{e.stopPropagation();const open=$('#case-menu').classList.toggle('hidden')===false;$('#more-menu').setAttribute('aria-expanded',String(open))};
-$('#case-menu').onclick=e=>e.stopPropagation();
+function closeCaseMenu(){}
 $('#assign-case').onclick=()=>{const item=exceptions.find(x=>x.id===selectedId);item.owner='You';(item.events??=[]).unshift('Assigned to you');saveCases();closeCaseMenu();renderExceptions();toast('Exception assigned to you')};
 $('#case-audit').onclick=()=>{const item=exceptions.find(x=>x.id===selectedId);closeCaseMenu();if(item.id==='EXC-2481'){switchTab('audit');return}const events=item.events?.length?item.events:['No recorded actions yet'];openModal(`<p class="eyebrow">Case history</p><h2>Audit history</h2><p>${escapeHtml(item.id)} · ${escapeHtml(item.title)}</p><div class="modal-summary">${events.map(event=>`<p>${escapeHtml(event)}</p>`).join('')}</div><p><small>Demo history is saved only in this browser.</small></p>`)};
 $('#copy-case').onclick=async()=>{closeCaseMenu();try{await navigator.clipboard.writeText(selectedId);toast('Exception ID copied')}catch(_){openModal(`<p class="eyebrow">Exception ID</p><h2>${escapeHtml(selectedId)}</h2><p>Select and copy this ID.</p>`)}};
