@@ -837,3 +837,23 @@ body *:not(.hgi-stroke){
 .modal .modal-actions button{
   font-size:14px!important;
 }
+
+/* Approval confirmation details. */
+.modal-close{
+  border-radius:50%!important;
+}
+.modal .check-list span{
+  font-size:14px!important;
+  line-height:1.35;
+}
+.modal .confirm-check{
+  align-items:center;
+  font-size:14px!important;
+  line-height:1.4;
+}
+.modal .confirm-check input{
+  flex:0 0 auto;
+  width:16px;
+  height:16px;
+  margin:0;
+}
