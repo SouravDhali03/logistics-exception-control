@@ -69,16 +69,21 @@ AI does not replace operational judgment. Confidence is not certainty, inferred 
 6. Review closure criteria after verified evidence arrives.
 7. Close the exception or reopen it when new information contradicts the outcome.
 
-## Design approach
+## Design philosophy
 
-The interface uses a modernized IBM-inspired visual language:
+The product is designed as a calm, trustworthy operational workspace: it should help a coordinator make a consequential decision quickly without hiding uncertainty or making the interface feel like an alarm console.
 
-- Geist typography
-- IBM Blue as the primary brand color
-- Carbon-style tags, spacing, borders, and interaction states
-- Hugeicons for interface and transport-mode iconography
-- Dense operational information presented with clear hierarchy and generous row spacing
-- Responsive behavior for narrower screens
+- **Decisions before decoration** — hierarchy gives priority to exception severity, impact, ownership, evidence quality, and the next decision. Decorative treatment is deliberately restrained.
+- **Progressive disclosure** — the inbox supports scanning; the side workspace reveals evidence and trade-offs only when a case is opened; after approval, competing options disappear so monitoring becomes the active task.
+- **Evidence is visible** — verified facts, AI inference, data gaps, confidence, and freshness are communicated as distinct states. The interface does not present an AI conclusion as certainty.
+- **Human control is explicit** — recommendation, approval, override, closure review, and reopening each have clear UI states. A person remains responsible for material operational choices.
+- **Status through restrained color** — neutral surfaces keep dense information readable; red highlights critical risk, amber indicates caution, blue signals active information, and green marks recorded or verified progress.
+- **Operational density with breathing room** — compact tables support fast comparison, while generous padding, clear dividers, and aligned metrics prevent the workspace from becoming visually overwhelming.
+- **Typography supports hierarchy** — a modern sans-serif system uses regular-weight headings and controlled scale changes so emphasis comes from structure and state, not excessive bold text.
+- **Consistency across the lifecycle** — shared borders, top accents, tags, action patterns, and audit language connect detection, decision, monitoring, and closure into one coherent flow.
+- **Responsive by default** — information remains legible and action controls remain reachable on narrower screens without changing the underlying decision model.
+
+The result is a product language that feels operationally serious, AI-assisted, and accountable rather than merely dashboard-like.
 
 ## Technology
 
