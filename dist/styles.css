@@ -1014,6 +1014,7 @@ body *:not(.hgi-stroke){
 .modal-close{
   border-radius:50%!important;
 }
+
 .modal .check-list span{
   font-size:14px!important;
   line-height:1.35;
@@ -1123,4 +1124,19 @@ body *:not(.hgi-stroke){
 .authority-state b{font-size:12px;font-weight:500;color:#393939}
 .response-actions .primary,.response-actions .ghost{white-space:nowrap}
 @media(max-width:720px){.response-details{margin-inline:12px}.response-actions{display:flex;align-items:stretch;flex-wrap:wrap}.authority-state{order:-1;width:100%;justify-items:start;text-align:left}.response-actions .link-button{margin-right:auto}.response-actions .primary,.response-actions .ghost{flex:1}.response-summary{padding-left:25px}}
+
+/* Use Hugeicons for all compact navigation, transport, and provenance marks. */
+.utility-greeting .hgi-stroke{font-size:17px;vertical-align:-2px}
+.hero-notifications .hgi-stroke{font-size:17px}
+.utility-menu-toggle .hgi-stroke{font-size:16px}
+.source-icon .hgi-stroke{font-size:17px}
+.mode-icon .hgi-stroke{font-size:16px}
+.pagination-btn .hgi-stroke{font-size:15px;vertical-align:-2px}
+
+/* Restore a softly elevated filter surface after the compact surface reset. */
+.filter-popover{
+  border-radius:12px!important;
+  box-shadow:0 14px 30px rgba(20,24,32,.14),0 3px 8px rgba(20,24,32,.08)!important;
+}
+.filter-option{border-radius:8px!important}
 
