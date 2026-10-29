@@ -44,17 +44,17 @@ const $=s=>document.querySelector(s)||{onclick:null,setAttribute(){},classList:{
 const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const priorityLabel=p=>({P1:'Critical',P2:'High',P3:'Medium'}[p]||'Medium');
 const transportMode=id=>({
- 'EXC-2481':['ship','<i class="hgi-stroke hgi-ship-01" aria-hidden="true"></i>','Ocean freight'],
+ 'EXC-2481':['ship','<i class="hgi-stroke hgi-ship" aria-hidden="true"></i>','Ocean freight'],
  'EXC-2479':['plane','<i class="hgi-stroke hgi-airplane-01" aria-hidden="true"></i>','Air freight'],
  'EXC-2476':['plane','<i class="hgi-stroke hgi-airplane-01" aria-hidden="true"></i>','Air freight'],
- 'EXC-2471':['ship','<i class="hgi-stroke hgi-ship-01" aria-hidden="true"></i>','Ocean freight'],
- 'EXC-2468':['truck','<i class="hgi-stroke hgi-truck-01" aria-hidden="true"></i>','Road freight'],
- 'EXC-2464':['truck','<i class="hgi-stroke hgi-truck-01" aria-hidden="true"></i>','Road freight'],
- 'EXC-2461':['ship','<i class="hgi-stroke hgi-ship-01" aria-hidden="true"></i>','Ocean freight'],
- 'EXC-2459':['truck','<i class="hgi-stroke hgi-truck-01" aria-hidden="true"></i>','Road freight'],
- 'EXC-2458':['truck','<i class="hgi-stroke hgi-truck-01" aria-hidden="true"></i>','Road freight'],
+ 'EXC-2471':['ship','<i class="hgi-stroke hgi-ship" aria-hidden="true"></i>','Ocean freight'],
+ 'EXC-2468':['truck','<i class="hgi-stroke hgi-truck" aria-hidden="true"></i>','Road freight'],
+ 'EXC-2464':['truck','<i class="hgi-stroke hgi-truck" aria-hidden="true"></i>','Road freight'],
+ 'EXC-2461':['ship','<i class="hgi-stroke hgi-ship" aria-hidden="true"></i>','Ocean freight'],
+ 'EXC-2459':['truck','<i class="hgi-stroke hgi-truck" aria-hidden="true"></i>','Road freight'],
+ 'EXC-2458':['truck','<i class="hgi-stroke hgi-truck" aria-hidden="true"></i>','Road freight'],
  'EXC-2456':['plane','<i class="hgi-stroke hgi-airplane-01" aria-hidden="true"></i>','Air freight']
-}[id]||['truck','<i class="hgi-stroke hgi-truck-01" aria-hidden="true"></i>','Road freight']);
+}[id]||['truck','<i class="hgi-stroke hgi-truck" aria-hidden="true"></i>','Road freight']);
 const sourceIconClass=code=>({CR:'hgi-activity-01',TM:'hgi-clock-01',RL:'hgi-arrow-right-01',ET:'hgi-ai-beautify',SL:'hgi-file-01',CS:'hgi-user-group',GT:'hgi-location-01',EV:'hgi-activity-01',AI:'hgi-ai-beautify'}[code]||'hgi-information-circle');
 function saveCases(){try{localStorage.setItem('tiger-exceptions-v1',JSON.stringify(exceptions));}catch(_){toast('Could not save locally; this change lasts until the page closes.')}}
 function applyPagination(){
@@ -260,7 +260,7 @@ renderExceptions();renderEvidence();renderTimeline();renderAudit();renderResolut
  function renderQueue(){
   const visible=exceptions.filter(e=>currentFilter==='all'||(currentFilter==='critical'&&e.p==='P1')||(currentFilter==='mine'&&e.owner==='You'));
   const host=document.querySelector('#exception-list'); if(!host)return;
-  host.innerHTML=`<div class="exception-table" role="table" aria-label="Prioritized exceptions"><div class="exception-table-head" role="row"><span>ID</span><span>Priority</span><span>Exception</span><span>Route</span><span>Impact</span><span>Confidence</span><span>Owner</span><span>Actions</span></div>${visible.map(e=>{const [from,to]=e.route.split(' → ');const s=caseState(e.id);return `<button class="exception-row ${e.id===activeId?'active':''}" role="row" data-scenario="${e.id}"><span class="id-cell">${e.id}</span><span class="priority ${e.p.toLowerCase()}"><span class="priority-dot"></span>${e.p} · ${priorityLabel(e.p)}</span><span class="exception-name"><strong>${esc(e.title)}</strong>${scenarios[e.id]?statePill(s):''}</span><span class="route-journey"><span class="route-stops"><span class="route-stop route-origin"><i class="stop-marker"></i>${esc(from)}</span><span class="route-stop route-destination"><i class="stop-marker"></i>${esc(to||'—')}</span></span></span><span class="impact-cell">${esc(e.detail)}</span><span class="uncertainty-cell">${esc(e.uncertainty)}</span><span class="owner-cell">${esc(e.owner)}</span><span class="row-action"><i class="hgi-stroke hgi-more-horizontal"></i></span></button>`}).join('')}</div>`;
+  host.innerHTML=`<div class="exception-table" role="table" aria-label="Prioritized exceptions"><div class="exception-table-head" role="row"><span>ID</span><span>Priority</span><span>Exception</span><span>Route</span><span>Impact</span><span>Confidence</span><span>Owner</span><span>Actions</span></div>${visible.map(e=>{const [from,to]=e.route.split(' → ');const s=caseState(e.id);const mode=transportMode(e.id);return `<button class="exception-row ${e.id===activeId?'active':''}" role="row" data-scenario="${e.id}"><span class="id-cell">${e.id}</span><span class="priority ${e.p.toLowerCase()}"><span class="priority-dot"></span>${e.p} · ${priorityLabel(e.p)}</span><span class="exception-name"><strong>${esc(e.title)}</strong>${scenarios[e.id]?statePill(s):''}</span><span class="route-journey"><span class="mode-icon ${mode[0]}" title="${mode[2]}">${mode[1]}</span><span class="route-stops"><span class="route-stop route-origin"><i class="stop-marker"></i>${esc(from)}</span><span class="route-stop route-destination"><i class="stop-marker"></i>${esc(to||'—')}</span></span></span><span class="impact-cell">${esc(e.detail)}</span><span class="uncertainty-cell">${esc(e.uncertainty)}</span><span class="owner-cell">${esc(e.owner)}</span><span class="row-action"><i class="hgi-stroke hgi-more-horizontal"></i></span></button>`}).join('')}</div>`;
   host.querySelectorAll('[data-scenario]').forEach(b=>b.onclick=()=>openCase(b.dataset.scenario));
   document.querySelector('#open-count').textContent=exceptions.length;
   document.querySelector('.nav-item[data-view="inbox"] .nav-count').textContent=exceptions.length;
