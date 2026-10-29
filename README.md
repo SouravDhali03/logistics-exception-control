@@ -1,114 +1,200 @@
 # Logistics Exception Control
 
-An AI-assisted logistics control tower for detecting, prioritizing, investigating, and resolving shipment exceptions with clear human oversight.
+An AI-assisted control tower that helps logistics coordinators detect, understand, decide, and follow through on shipment exceptions without surrendering human accountability.
 
-**Public GitHub Pages demo:** [souravdhali03.github.io/logistics-exception-control](https://souravdhali03.github.io/logistics-exception-control/)
+[Open the live GitHub Pages prototype](https://souravdhali03.github.io/logistics-exception-control/) · [View the repository](https://github.com/SouravDhali03/logistics-exception-control) · [Read the design case study](./DESIGN.md)
 
-
-> The GitHub Pages version is public. The Sites deployment remains private and owner-only.
+> This is an interactive front-end prototype. External requests, approvals, carrier actions, and operational updates are simulated; nothing is sent to a live logistics system.
 
 ## Product objective
 
-Logistics Exception Control turns scattered shipment signals into a clear, accountable decision workflow. Its goal is to help a logistics coordinator detect an exception early, understand what is known and uncertain, choose an appropriate response, and track the case until there is evidence that it is resolved.
+Logistics Exception Control turns fragmented shipment signals into a focused, evidence-backed workflow:
 
-The product is deliberately designed as decision support, not autonomous operations. AI accelerates investigation and comparison; a person approves material actions and remains accountable for the outcome.
+`Detect → Prioritize → Investigate → Decide → Approve → Monitor → Close or reopen`
 
-## The coordinator's pain points
+The product should enable a coordinator to answer six practical questions quickly:
 
-Logistics coordinators often manage many shipments at once while information is distributed across tracking feeds, carrier updates, terminals, customer commitments, and internal systems. A delayed shipment alone does not answer the questions needed to act:
+1. What happened?
+2. What is verified, inferred, or still missing?
+3. Which customer, SLA, financial, or compliance commitment is at risk?
+4. Which response best balances recovery, cost, and operational exposure?
+5. Who has authority to approve the response?
+6. Has objective evidence confirmed that the exception is resolved?
 
-- What happened, and which evidence supports it?
-- Why is the customer or SLA commitment at risk?
-- How urgent is this compared with other issues?
-- Who owns the next step?
-- Which response best balances recovery time, cost, and operational risk?
-- Has the response actually worked, or does the exception need to be reopened?
+AI accelerates analysis and comparison. A person remains responsible for material decisions, approvals, overrides, and closure.
 
-Without a structured workflow, coordinators spend too much time manually investigating, switching between systems, explaining decisions, and reconstructing history after an issue is closed.
+## The problem
 
-## How the product addresses those problems
+Logistics coordinators manage many shipments while evidence is spread across carriers, terminals, brokers, tracking feeds, warehouse systems, customer commitments, and internal tools. An alert may say that a shipment is late, but it rarely explains the cause, business consequence, available recovery paths, or what must happen next.
 
-| Pain point | Product response | Result |
+Common pain points include:
+
+- **Fragmented operational signals** — the coordinator must reconstruct one case across several systems.
+- **Alert overload** — every issue competes for attention, even when impact and urgency differ.
+- **Unclear certainty** — verified events, model estimates, assumptions, and missing inputs are easily mixed together.
+- **Complex trade-offs** — faster recovery can increase cost, compliance risk, or downstream commitments.
+- **Unclear decision authority** — some actions are within coordinator limits; others require manager sign-off.
+- **Weak follow-through** — approving an action is not the same as confirming that it worked.
+- **Poor accountability** — teams need a durable explanation of what was recommended, chosen, corrected, and closed.
+
+## Current prototype
+
+The queue contains ten realistic exception examples spanning port disruption, temperature excursion, incomplete customs documents, stale tracking, delayed warehouse handoff, driver-hours compliance, customs release, missing proof of delivery, carrier-capacity loss, and offline temperature telemetry.
+
+Six decision-rich cases have scenario-specific assessments and recovery choices. Each can move through decision, information request, sign-off, monitoring, closure-readiness, and closed states.
+
+### 1. Prioritized exception inbox
+
+The main table combines priority, route, impact, confidence, owner, status, and recency in one scan-friendly view. Filters support all exceptions, critical exceptions, and cases assigned to the current coordinator.
+
+**Why it exists:** Coordinators need to direct attention by operational consequence, not simply by alert time.
+
+### 2. Focused exception workspace
+
+Opening a row reveals a right-side case workspace while keeping the queue visible behind it. The workspace includes Decision, Evidence, Timeline, and Audit views.
+
+**Why it exists:** Deep investigation should not make the coordinator lose their place in the wider operation.
+
+### 3. Evidence-backed AI assessment
+
+The assessment separates four types of information:
+
+- verified facts;
+- likely cause and AI inference;
+- business impact;
+- missing data or open confirmation.
+
+The evidence-readiness card shows confidence, source count, and freshness. The entire card opens the Evidence view, making provenance a primary interaction rather than a hidden footnote.
+
+**Why it exists:** A recommendation is only useful when the coordinator can judge the evidence supporting it.
+
+### 4. Compact response comparison
+
+Recovery choices are presented as an accordion instead of multiple expanded cards. Every row exposes the same comparison fields: recovery time, added cost, and risk. The active row expands to show commitment protection, dependencies, assumptions, decision authority, and approval actions.
+
+The leading option carries a distinct **AI recommended** badge, while muted surfaces and consistent grey borders keep the comparison calm and readable. The coordinator can inspect alternatives without losing the selected response.
+
+**Why it exists:** Progressive disclosure keeps all necessary decision information available without overwhelming the user at first glance.
+
+### 5. Human authority, sign-off, and override
+
+The prototype uses a simulated $2,500 coordinator approval threshold:
+
+- actions within the threshold can be reviewed and approved by the coordinator;
+- actions above the threshold are sent for simulated manager sign-off;
+- open dependencies remain visible before approval;
+- the coordinator can override AI and record operational context that the recommendation missed.
+
+**Why it exists:** AI can recommend an action, but it should not silently create cost, compliance, or customer commitments.
+
+### 6. Request more information
+
+When evidence is incomplete, the coordinator can record an information request instead of treating uncertainty as fact. The case enters an awaiting-information state and the recommendation is reassessed when a simulated verified reply arrives.
+
+**Why it exists:** Sometimes the correct next step is to reduce uncertainty, not approve a recovery action.
+
+### 7. Resolution lifecycle
+
+Resolution monitoring stays out of the way until a response is selected. After approval or sign-off, the interface shifts from decision mode to follow-through:
+
+- the selected response is recorded;
+- competing alternatives are retained in decision history rather than left as active choices;
+- the case waits for an objective carrier, terminal, broker, or customer update;
+- closure review becomes available only after a verified checkpoint;
+- contradictory evidence can reopen the decision;
+- closed cases retain monitoring and audit history.
+
+**Why it exists:** A task being approved or dispatched does not prove the underlying shipment risk has been resolved.
+
+### 8. Monitoring, decision history, learning, and audit
+
+The supporting product views organize cases that need follow-through, preserve human and system events, and collect AI overrides for review. Human corrections are learning candidates; they do not automatically retrain a model or change policy.
+
+**Why it exists:** Operational trust depends on traceability and deliberate governance, not invisible automation.
+
+## Pain point to feature mapping
+
+| Coordinator pain point | Product feature | How it helps |
 | --- | --- | --- |
-| Too many signals and exceptions | Prioritized inbox with severity, impact, confidence, owner, and route context | Attention is directed to the most consequential issues first. |
-| Unclear facts versus assumptions | AI decision view separates verified facts, likely cause, business impact, inferred risk, and missing data | Coordinators can assess the quality of a recommendation before acting. |
-| Difficult trade-offs | Recommended and alternative responses compare recovery time, added cost, SLA protection, and risk | Decisions are explicit and easier to justify. |
-| Uncontrolled or high-risk action | Risk-based approval and human override controls | A coordinator keeps authority over operational commitments. |
-| No clear follow-through | Resolution state moves from approval to monitoring, verified update, closure review, and reopening | A case stays visible until objective evidence supports closure. |
-| Weak handoff and accountability | Timeline and audit views preserve evidence, decisions, corrections, and timestamps | Teams can understand what happened and why. |
-
-## Key features
-
-- **Prioritized exception inbox** — presents open exceptions with priority, business impact, confidence, ownership, and transport route.
-- **Exception workspace** — opens a focused case view without losing the operational queue in the background.
-- **Evidence-backed AI assessment** — summarizes what happened, probable cause, impact, evidence quality, and information gaps.
-- **Evidence, timeline, and audit history** — gives coordinators context, provenance, and a record of activity.
-- **Response comparison** — lets a coordinator compare recommended and alternative actions by recovery, cost, SLA benefit, and risk.
-- **Human approval and override** — requires an explicit decision for material actions and provides a route to correct AI guidance.
-- **Progressive resolution lifecycle** — after an action is approved, alternatives recede and the workspace switches to monitoring, verification, closure, or reopening.
-- **Request-more-information flow** — represents how missing evidence can be escalated instead of treated as fact.
-- **Operational controls** — filtering, ownership actions, manual exception creation, notifications, and local demo persistence support realistic exploration.
+| Too many competing exceptions | Prioritized queue, impact context, confidence, owner, filters | Directs attention to consequential work first. |
+| Information scattered across systems | Focused workspace with Decision, Evidence, Timeline, and Audit | Brings the case narrative and provenance together. |
+| Facts mixed with assumptions | Verified fact, AI inference, assessment, and data-gap labels | Makes uncertainty visible before a decision. |
+| Difficult recovery trade-offs | Accordion comparison of recovery, cost, risk, commitment protection, and dependencies | Makes alternatives comparable without expanding every detail. |
+| Missing operational confirmation | Request-more-information flow and explicit decision gates | Prevents incomplete evidence from being treated as certainty. |
+| Unclear approval responsibility | Decision-authority state and simulated sign-off threshold | Routes high-cost actions to the appropriate human. |
+| AI recommendation may miss context | Override flow and Learning review | Preserves human judgment and creates reviewable feedback. |
+| Action approved but outcome unknown | Monitoring, verified update, closure criteria, and reopen flow | Keeps the case open until evidence supports resolution. |
+| Weak accountability | Decision history and audit log | Records what changed, who acted, and why. |
 
 ## How AI helps
 
-AI is used to support four parts of the workflow:
+AI is bounded to decision support:
 
-1. **Detect and prioritize** — correlate milestones, ETA changes, tracking freshness, SLA commitments, and carrier events to identify exceptions worth attention.
-2. **Investigate and explain** — synthesize operational signals into a plain-language assessment while identifying evidence, inference, and missing data separately.
-3. **Recommend and compare** — propose response options and surface their likely trade-offs in time, cost, SLA protection, and risk.
-4. **Monitor and learn** — watch for new or contradictory events, prompt a closure review when evidence is sufficient, and preserve human corrections as learning inputs.
+1. **Detect and correlate** — combine milestone changes, ETA variance, stale signals, SLA commitments, and carrier events into potential exceptions.
+2. **Prioritize** — estimate urgency and business impact so the queue reflects operational consequence.
+3. **Investigate and explain** — summarize what happened, identify a likely cause, expose missing data, and distinguish inference from evidence.
+4. **Recommend and compare** — propose scenario-specific recovery paths with recovery, cost, risk, commitment protection, assumptions, and dependencies.
+5. **Monitor and reassess** — react to verified or contradictory events and reopen the decision when the active plan is no longer supported.
+6. **Support learning review** — preserve human overrides as candidates for evaluation without automatically changing model behavior.
 
-AI does not replace operational judgment. Confidence is not certainty, inferred risks are not verified facts, and approval remains with the coordinator.
-
-## Core workflow
-
-1. Detect and validate a potential shipment exception.
-2. Prioritize it against other active issues.
-3. Investigate the case through evidence, inferred risk, and missing-data signals.
-4. Compare possible responses and approve or override the recommended approach.
-5. Track the approved response while awaiting an objective update.
-6. Review closure criteria after verified evidence arrives.
-7. Close the exception or reopen it when new information contradicts the outcome.
+AI does **not** approve expenditure, dispatch a carrier, contact a customer, close an exception, or rewrite operational policy in this prototype.
 
 ## Design philosophy
 
-The product is designed as a calm, trustworthy operational workspace: it should help a coordinator make a consequential decision quickly without hiding uncertainty or making the interface feel like an alarm console.
+The interface is designed as a calm operational workspace rather than an alarm-heavy dashboard.
 
-- **Decisions before decoration** — hierarchy gives priority to exception severity, impact, ownership, evidence quality, and the next decision. Decorative treatment is deliberately restrained.
-- **Progressive disclosure** — the inbox supports scanning; the side workspace reveals evidence and trade-offs only when a case is opened; after approval, competing options disappear so monitoring becomes the active task.
-- **Evidence is visible** — verified facts, AI inference, data gaps, confidence, and freshness are communicated as distinct states. The interface does not present an AI conclusion as certainty.
-- **Human control is explicit** — recommendation, approval, override, closure review, and reopening each have clear UI states. A person remains responsible for material operational choices.
-- **Status through restrained color** — neutral surfaces keep dense information readable; red highlights critical risk, amber indicates caution, blue signals active information, and green marks recorded or verified progress.
-- **Operational density with breathing room** — compact tables support fast comparison, while generous padding, clear dividers, and aligned metrics prevent the workspace from becoming visually overwhelming.
-- **Typography supports hierarchy** — a modern sans-serif system uses regular-weight headings and controlled scale changes so emphasis comes from structure and state, not excessive bold text.
-- **Consistency across the lifecycle** — shared borders, top accents, tags, action patterns, and audit language connect detection, decision, monitoring, and closure into one coherent flow.
-- **Responsive by default** — information remains legible and action controls remain reachable on narrower screens without changing the underlying decision model.
+- **Decision-first hierarchy** — severity, impact, confidence, dependencies, authority, and next action lead the composition.
+- **Progressive disclosure** — the queue supports scanning; the drawer reveals case evidence; the accordion expands only the response being evaluated.
+- **Evidence before confidence** — confidence is accompanied by provenance, source count, freshness, and explicit data gaps.
+- **Human control is visible** — approval, sign-off, override, closure, and reopening are distinct interaction states.
+- **Minimal, meaningful color** — neutral surfaces and grey borders carry structure; red signals critical risk, amber signals caution, blue signals active information, and muted green identifies AI-supported or verified progress.
+- **Regular-weight typography** — hierarchy comes from grouping, spacing, and scale rather than excessive bold text.
+- **Consistent geometry** — rounded containers, pill tags, Hugeicons, aligned metrics, and shared control patterns create a coherent product language.
+- **Operational density with breathing room** — the product preserves information needed for a consequential decision while reducing the amount shown simultaneously.
 
-The result is a product language that feels operationally serious, AI-assisted, and accountable rather than merely dashboard-like.
+## Prototype workflow
+
+1. Open an exception from the prioritized queue.
+2. Review verified facts, AI inference, impact, missing data, confidence, and evidence freshness.
+3. Open the Evidence view when source-level validation is needed.
+4. Compare response rows and expand one option for its dependencies and trade-offs.
+5. Request missing information, override AI, approve within authority, or request manager sign-off.
+6. Monitor the selected response for an objective operational update.
+7. Review all closure criteria after verified evidence arrives.
+8. Close the exception, or reopen/reassess it when contradictory evidence appears.
 
 ## Technology
 
 - Semantic HTML
-- CSS
+- CSS with responsive layouts and design tokens
 - Vanilla JavaScript
-- Browser `localStorage` for prototype data persistence
-- Static hosting with no build step or runtime dependencies
+- [Hugeicons](https://hugeicons.com/) icon font
+- Browser `localStorage` for locally created exceptions
+- Static GitHub Pages deployment
+- No framework, build step, server runtime, or production dependency
 
 ## Project structure
 
 ```text
 dist/
-  index.html   Application structure and accessible markup
-  styles.css   Visual system, layout, states, and responsive rules
-  app.js       Demo data, interactions, drawer flows, and local state
+  index.html                 Application structure and accessible markup
+  styles.css                 Design system, responsive layout, and UI states
+  app.js                     Demo data, scenarios, interactions, and local state
+  assets/                    Logo, avatar, and supporting visual assets
+
+.github/workflows/
+  deploy-pages.yml           GitHub Pages deployment from dist/
 
 .openai/
-  hosting.json Site hosting configuration
+  hosting.json               OpenAI Sites hosting configuration
+
+DESIGN.md                    Detailed product-design case study
+README.md                    Product, implementation, and repository overview
 ```
 
 ## Run locally
 
-From the repository root, run:
+From the repository root:
 
 ```bash
 python3 -m http.server 4173 --directory dist
@@ -118,16 +204,28 @@ Then open [http://127.0.0.1:4173](http://127.0.0.1:4173).
 
 ## Deployment
 
-The project has two static deployment options:
+The public prototype is deployed from `dist/` by GitHub Actions whenever a commit reaches `main`:
 
-- **GitHub Pages:** [public project page](https://souravdhali03.github.io/logistics-exception-control/). The `.github/workflows/deploy-pages.yml` workflow publishes `dist/` whenever changes are pushed to `main`.
-- **OpenAI Sites:** a private owner-only deployment that packages `dist/` without a build step, server runtime, or environment variables.
+- **Live site:** [souravdhali03.github.io/logistics-exception-control](https://souravdhali03.github.io/logistics-exception-control/)
+- **Repository:** [github.com/SouravDhali03/logistics-exception-control](https://github.com/SouravDhali03/logistics-exception-control)
+- **Primary branch:** `main`
+- **Deployment workflow:** [`.github/workflows/deploy-pages.yml`](./.github/workflows/deploy-pages.yml)
 
-## Prototype scope
+An additional private OpenAI Sites deployment is configured for owner-only review.
 
-This repository is a product prototype. Approval and execution interactions record demo activity in the browser, but they do not connect to live carrier systems, send customer communications, or execute operational changes.
+## Prototype boundaries and production requirements
 
-Production implementation would require authentication, role-based access, persistent backend storage, shipment and carrier integrations, notification services, observability, and security review.
+The current build demonstrates the workflow and interaction model, not live logistics execution. It does not authenticate users, connect to carrier or terminal APIs, send messages, reserve capacity, create transport orders, or persist audit records to a backend.
+
+A production implementation would require:
+
+- authentication, role-based access, and configurable approval limits;
+- durable case, evidence, decision, and audit storage;
+- integrations with TMS, WMS, carrier, terminal, customs, telematics, ETA, and customer systems;
+- task orchestration, notifications, customer communication, and execution confirmation;
+- evidence provenance, data-quality monitoring, model evaluation, and AI governance;
+- security, privacy, observability, recovery, and compliance review;
+- outcome measurement for time to detect, time to decide, time to resolve, cost avoided, and commitment protection.
 
 ## Repository details
 
@@ -135,7 +233,7 @@ Production implementation would require authentication, role-based access, persi
 | --- | --- |
 | Repository | [SouravDhali03/logistics-exception-control](https://github.com/SouravDhali03/logistics-exception-control) |
 | Public demo | [GitHub Pages](https://souravdhali03.github.io/logistics-exception-control/) |
-| Primary branch | `main` |
-| Application source | [`dist/`](./dist) |
+| Source | [`dist/`](./dist) |
 | Design case study | [`DESIGN.md`](./DESIGN.md) |
-| Pages workflow | [`.github/workflows/deploy-pages.yml`](./.github/workflows/deploy-pages.yml) |
+| Hosting workflow | [`.github/workflows/deploy-pages.yml`](./.github/workflows/deploy-pages.yml) |
+| License | No license file is currently included. |
