@@ -1133,3 +1133,10 @@ body *:not(.hgi-stroke){
 .mode-icon .hgi-stroke{font-size:16px}
 .pagination-btn .hgi-stroke{font-size:15px;vertical-align:-2px}
 
+/* Restore a softly elevated filter surface after the compact surface reset. */
+.filter-popover{
+  border-radius:12px!important;
+  box-shadow:0 14px 30px rgba(20,24,32,.14),0 3px 8px rgba(20,24,32,.08)!important;
+}
+.filter-option{border-radius:8px!important}
+
