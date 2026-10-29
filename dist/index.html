@@ -6,7 +6,7 @@
   <meta name="description" content="AI-assisted shipment exception management with human-controlled decisions." />
   <title>Logistics Exception Control</title>
   <link rel="stylesheet" href="https://use.hugeicons.com/font/icons.css" />
-  <link rel="stylesheet" href="styles.css?v=20261028-13" />
+  <link rel="stylesheet" href="styles.css?v=20261029-14" />
 </head>
 <body>
   <div class="app-shell">
@@ -84,10 +84,10 @@
                 <div><span><i class="hgi-stroke hgi-alert-circle" aria-hidden="true"></i> Business impact <b class="evidence-type inference">AI assessment</b></span><p id="business-impact">31h delay · SLA breach likely · $42k order at risk.</p></div>
                 <div><span><i class="hgi-stroke hgi-file-01" aria-hidden="true"></i> Missing data <b class="evidence-type gap">Data gap</b></span><p id="missing-data">Confirmed terminal gate appointment.</p></div>
               </div>
-              <section class="evidence-summary" aria-label="Evidence quality summary">
+              <section class="evidence-summary evidence-link" aria-label="View evidence" role="link" tabindex="0" data-tab-open="evidence">
                 <div class="evidence-summary-head">
                   <div><span class="evidence-kicker">Evidence readiness</span><strong>High confidence</strong></div>
-                  <button class="link-button" data-tab-open="evidence">View 7 sources <span aria-hidden="true">→</span></button>
+                  <span class="evidence-open">View evidence <i class="hgi-stroke hgi-arrow-right-01" aria-hidden="true"></i></span>
                 </div>
                 <div class="evidence-score"><span class="evidence-score-value">82%</span><span>signal confidence</span></div>
                 <div class="evidence-meter" aria-hidden="true"><i style="width:82%"></i></div>
@@ -147,6 +147,7 @@
           <div class="case-content hidden" id="audit-tab"><section class="card"><div class="section-title"><div><p class="eyebrow">Immutable history</p><h3>Decision and action audit</h3></div><button class="ghost">Export JSON</button></div><div id="audit-list" class="audit-list"></div></section></div>
         </section>
       </section>
+      <section class="product-view hidden" id="product-view" aria-live="polite"></section>
     </main>
   </div>
 
