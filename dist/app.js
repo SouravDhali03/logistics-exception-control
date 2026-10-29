@@ -44,17 +44,18 @@ const $=s=>document.querySelector(s)||{onclick:null,setAttribute(){},classList:{
 const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const priorityLabel=p=>({P1:'Critical',P2:'High',P3:'Medium'}[p]||'Medium');
 const transportMode=id=>({
- 'EXC-2481':['ship','⚓','Ocean freight'],
- 'EXC-2479':['plane','✈','Air freight'],
- 'EXC-2476':['plane','✈','Air freight'],
- 'EXC-2471':['ship','⚓','Ocean freight'],
- 'EXC-2468':['truck','▣','Road freight'],
- 'EXC-2464':['truck','▣','Road freight'],
- 'EXC-2461':['ship','⚓','Ocean freight'],
- 'EXC-2459':['truck','▣','Road freight'],
- 'EXC-2458':['truck','▣','Road freight'],
- 'EXC-2456':['plane','✈','Air freight']
-}[id]||['truck','▣','Road freight']);
+ 'EXC-2481':['ship','<i class="hgi-stroke hgi-ship-01" aria-hidden="true"></i>','Ocean freight'],
+ 'EXC-2479':['plane','<i class="hgi-stroke hgi-airplane-01" aria-hidden="true"></i>','Air freight'],
+ 'EXC-2476':['plane','<i class="hgi-stroke hgi-airplane-01" aria-hidden="true"></i>','Air freight'],
+ 'EXC-2471':['ship','<i class="hgi-stroke hgi-ship-01" aria-hidden="true"></i>','Ocean freight'],
+ 'EXC-2468':['truck','<i class="hgi-stroke hgi-truck-01" aria-hidden="true"></i>','Road freight'],
+ 'EXC-2464':['truck','<i class="hgi-stroke hgi-truck-01" aria-hidden="true"></i>','Road freight'],
+ 'EXC-2461':['ship','<i class="hgi-stroke hgi-ship-01" aria-hidden="true"></i>','Ocean freight'],
+ 'EXC-2459':['truck','<i class="hgi-stroke hgi-truck-01" aria-hidden="true"></i>','Road freight'],
+ 'EXC-2458':['truck','<i class="hgi-stroke hgi-truck-01" aria-hidden="true"></i>','Road freight'],
+ 'EXC-2456':['plane','<i class="hgi-stroke hgi-airplane-01" aria-hidden="true"></i>','Air freight']
+}[id]||['truck','<i class="hgi-stroke hgi-truck-01" aria-hidden="true"></i>','Road freight']);
+const sourceIconClass=code=>({CR:'hgi-activity-01',TM:'hgi-clock-01',RL:'hgi-arrow-right-01',ET:'hgi-ai-beautify',SL:'hgi-file-01',CS:'hgi-user-group',GT:'hgi-location-01',EV:'hgi-activity-01',AI:'hgi-ai-beautify'}[code]||'hgi-information-circle');
 function saveCases(){try{localStorage.setItem('tiger-exceptions-v1',JSON.stringify(exceptions));}catch(_){toast('Could not save locally; this change lasts until the page closes.')}}
 function applyPagination(){
  const rows=$$('#exception-list .exception-row');
@@ -64,7 +65,7 @@ function applyPagination(){
  rows.forEach((row,index)=>{row.hidden=index<start||index>=start+pageSize});
  const from=rows.length?start+1:0;
  const to=Math.min(start+pageSize,rows.length);
- $('#queue-pagination').innerHTML=rows.length?`<span class="queue-pagination-summary">${from}–${to} of ${rows.length} exceptions</span><span class="queue-pagination-controls"><button class="pagination-btn" data-page="${currentPage-1}" aria-label="Previous page" ${currentPage===1?'disabled':''}>‹</button>${Array.from({length:totalPages},(_,i)=>`<button class="pagination-btn ${i+1===currentPage?'active':''}" data-page="${i+1}" aria-label="Page ${i+1}">${i+1}</button>`).join('')}<button class="pagination-btn" data-page="${currentPage+1}" aria-label="Next page" ${currentPage===totalPages?'disabled':''}>›</button></span>`:'';
+ $('#queue-pagination').innerHTML=rows.length?`<span class="queue-pagination-summary">${from}–${to} of ${rows.length} exceptions</span><span class="queue-pagination-controls"><button class="pagination-btn" data-page="${currentPage-1}" aria-label="Previous page" ${currentPage===1?'disabled':''}><i class="hgi-stroke hgi-arrow-left-01" aria-hidden="true"></i></button>${Array.from({length:totalPages},(_,i)=>`<button class="pagination-btn ${i+1===currentPage?'active':''}" data-page="${i+1}" aria-label="Page ${i+1}">${i+1}</button>`).join('')}<button class="pagination-btn" data-page="${currentPage+1}" aria-label="Next page" ${currentPage===totalPages?'disabled':''}><i class="hgi-stroke hgi-arrow-right-01" aria-hidden="true"></i></button></span>`:'';
 }
 function renderExceptions(){
  const visible=exceptions.filter(e=>currentFilter==='all'||(currentFilter==='critical'&&e.p==='P1')||(currentFilter==='mine'&&e.owner==='You')).sort((a,b)=>a.p.localeCompare(b.p));
@@ -104,7 +105,7 @@ function selectException(id,openDrawer=true){
  if(!sample){ $('#what-happened').textContent=e.detail; $('#likely-cause').textContent='Not yet assessed.'; $('#business-impact').textContent=`${e.route} · ${priorityLabel(e.p)} priority`; $('#missing-data').textContent='Supporting evidence and partner confirmation.'; }
  else{ $('#what-happened').textContent='Vessel discharge moved by 19 hours. The connecting rail slot is now unavailable.'; $('#likely-cause').textContent='Terminal congestion following an unplanned crane outage.'; $('#business-impact').textContent='31h delay · SLA breach likely · $42k order at risk.'; $('#missing-data').textContent='Confirmed terminal gate appointment.'; renderResolution(); }
 }
-function renderEvidence(){ $('#evidence-list').innerHTML=evidence.map(x=>`<div class="evidence-item"><div class="source-icon">${x[0]}</div><div><strong>${x[1]}</strong><p>${x[2]}</p></div><span class="source-state">${x[3]}</span></div>`).join(''); }
+function renderEvidence(){ $('#evidence-list').innerHTML=evidence.map(x=>`<div class="evidence-item"><div class="source-icon"><i class="hgi-stroke ${sourceIconClass(x[0])}" aria-hidden="true"></i></div><div><strong>${x[1]}</strong><p>${x[2]}</p></div><span class="source-state">${x[3]}</span></div>`).join(''); }
 function renderTimeline(){ $('#timeline-list').innerHTML=timeline.map(x=>`<div class="timeline-item"><time>${x[0]}</time><div class="timeline-line"></div><div><strong>${x[1]}</strong><p>${x[2]}</p></div></div>`).join(''); }
 function renderAudit(){ $('#audit-list').innerHTML=audit.map(x=>`<div class="audit-item"><strong>${x[0]}</strong><p>${x[1]}</p><code>${x[2]}</code></div>`).join(''); }
 function clock(){return new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});}
@@ -292,7 +293,7 @@ renderExceptions();renderEvidence();renderTimeline();renderAudit();renderResolut
   document.querySelector('#assessment-confidence').textContent=`${d.confidence} confidence`;
   document.querySelector('#what-happened').textContent=d.what; document.querySelector('#likely-cause').textContent=d.cause; document.querySelector('#business-impact').textContent=d.impact; document.querySelector('#missing-data').textContent=d.gap;
   document.querySelector('.evidence-score-value').textContent=d.confidence; document.querySelector('.evidence-meter i').style.width=d.confidence; document.querySelector('.evidence-summary-meta').innerHTML=`<span><b>${d.sources}</b> verified sources</span><span>Freshness <b>2m</b></span>`;
-  document.querySelector('#evidence-list').innerHTML=[['EV','Operational event',d.what,'Verified'],['AI','AI assessment',d.cause,'AI inference'],['SL','Customer commitment',d.impact,'Verified'],['?','Open information',d.gap,'Missing']].map(x=>`<div class="evidence-item"><div class="source-icon">${x[0]}</div><div><strong>${x[1]}</strong><p>${x[2]}</p></div><span class="source-state">${x[3]}</span></div>`).join('');
+  document.querySelector('#evidence-list').innerHTML=[['EV','Operational event',d.what,'Verified'],['AI','AI assessment',d.cause,'AI inference'],['SL','Customer commitment',d.impact,'Verified'],['GT','Open information',d.gap,'Missing']].map(x=>`<div class="evidence-item"><div class="source-icon"><i class="hgi-stroke ${sourceIconClass(x[0])}" aria-hidden="true"></i></div><div><strong>${x[1]}</strong><p>${x[2]}</p></div><span class="source-state">${x[3]}</span></div>`).join('');
   document.querySelector('.status-strip strong').textContent=`AI assessment updated ${e.time||'just now'} ago`;
   document.querySelector('.status-strip p').textContent=d.what;
   renderActions();renderLifecycle();renderQueue();
