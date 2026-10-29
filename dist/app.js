@@ -334,3 +334,18 @@ renderExceptions();renderEvidence();renderTimeline();renderAudit();renderResolut
  renderQueue();renderCase();
 })();
 
+/* Add depth only while content is moving behind the sticky drawer header. */
+(() => {
+ const drawer=document.querySelector('#case-panel');
+ if(!drawer)return;
+ const updateHeaderDepth=()=>drawer.classList.toggle('is-scrolled',drawer.scrollTop>6);
+ drawer.addEventListener('scroll',updateHeaderDepth,{passive:true});
+ new MutationObserver(()=>{
+  if(!document.body.classList.contains('drawer-open')){
+   drawer.scrollTop=0;
+   updateHeaderDepth();
+  }
+ }).observe(document.body,{attributes:true,attributeFilter:['class']});
+ updateHeaderDepth();
+})();
+
