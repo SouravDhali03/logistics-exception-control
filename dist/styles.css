@@ -979,7 +979,7 @@ body *:not(.hgi-stroke){
   letter-spacing:var(--type-label-sm-track);
   color:#198754;
 }
-.utility-network-state b{display:block;width:10px;height:10px;background:#198754;animation:network-beacon 1.8s ease-in-out infinite}
+.utility-network-state b{display:block;width:10px;height:10px;border-radius:50%;background:#198754;animation:network-beacon 1.8s ease-in-out infinite}
 .network-resources{position:relative;display:inline-grid;place-items:center;width:22px;height:22px;color:var(--mute);cursor:help;border-radius:50%;outline:none}
 .network-resources .hgi-stroke{font-size:16px}
 .network-resources:hover,.network-resources:focus-visible{color:var(--ink);background:var(--canvas-soft-2)}
@@ -987,6 +987,16 @@ body *:not(.hgi-stroke){
 .network-resources:hover::after,.network-resources:focus-visible::after{opacity:1;transform:translateY(0)}
 .topbar-brand .eyebrow{margin-bottom:2px}
 @keyframes network-beacon{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(25,135,84,.28)}50%{opacity:.72;box-shadow:0 0 0 5px rgba(25,135,84,0)}}
+/* A quiet sunrise cue keeps the greeting feeling alive without distracting from
+   the operations workspace. The motion stays on the icon, so the header never
+   shifts while it animates. */
+@keyframes greeting-sunrise{
+  0%,72%,100%{transform:translateY(0) rotate(0deg);opacity:.9}
+  78%{transform:translateY(-2px) rotate(-8deg);opacity:1}
+  86%{transform:translateY(0) rotate(5deg);opacity:.96}
+  92%{transform:translateY(-1px) rotate(0deg);opacity:1}
+}
+.utility-greeting .hgi-sun-01{display:inline-block;transform-origin:50% 88%;animation:greeting-sunrise 8s cubic-bezier(.4,0,.2,1) infinite}
 .queue-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:32px;padding:0 22px 14px;background:#fff;color:var(--body);font-size:14px}
 .exception-row[hidden]{display:none!important}
 .queue-pagination-summary{color:var(--mute);font-size:14px}
@@ -996,7 +1006,7 @@ body *:not(.hgi-stroke){
 .pagination-btn.active{background:var(--primary);color:#fff}
 .pagination-btn:disabled{color:#b7b7b7;cursor:not-allowed}
 @media(max-width:620px){.queue-pagination{margin-top:24px;padding:0 16px 12px}.queue-pagination-summary{font-size:12px}.pagination-btn{min-width:28px;height:28px;font-size:12px}}
-@media(prefers-reduced-motion:reduce){.utility-network-state b{animation:none}}
+@media(prefers-reduced-motion:reduce){.utility-network-state b,.utility-greeting .hgi-sun-01{animation:none}}
 .page-utility{height:76px!important;min-height:76px!important;padding:12px 24px 0!important}
 
 /* Resolution lifecycle: make evidence state, execution progress, and human
