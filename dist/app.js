@@ -1,4 +1,5 @@
 let exceptions=[
+ {id:'EXC-14784509',p:'P2',title:'Reefer power interruption detected',route:'Kobe → Rotterdam',detail:'Cold-chain telemetry dropped for 18 min',time:'18m',owner:'You',uncertainty:'Possible · 72%'},
  {id:'EXC-2481',p:'P1',title:'Port congestion threatens delivery',route:'Rotterdam → Chicago',detail:'31h predicted delay · $42k at risk',time:'2m',owner:'You',uncertainty:'Likely · 82%'},
  {id:'EXC-2479',p:'P2',title:'Temperature excursion detected',route:'Singapore → Frankfurt',detail:'8.4°C for 22 min · Pharma',time:'11m',owner:'Mina',uncertainty:'Confirmed'},
  {id:'EXC-2476',p:'P2',title:'Customs documents incomplete',route:'Dhaka → Toronto',detail:'Commercial invoice mismatch',time:'26m',owner:'You',uncertainty:'Possible · 64%'},
@@ -10,7 +11,27 @@ let exceptions=[
  {id:'EXC-2458',p:'P2',title:'Carrier capacity reduced',route:'Los Angeles → Dallas',detail:'Two booked trailers cancelled',time:'6h',owner:'You',uncertainty:'Likely · 74%'},
  {id:'EXC-2456',p:'P3',title:'Temperature logger offline',route:'Osaka → Vancouver',detail:'No telemetry received for 3h',time:'7h',owner:'Nadia',uncertainty:'Possible · 55%'}
 ];
-try { const saved=JSON.parse(localStorage.getItem('tiger-exceptions-v1')); if(Array.isArray(saved)&&saved.length) exceptions=[...saved,...exceptions.filter(item=>!saved.some(savedItem=>savedItem.id===item.id))]; } catch (_) {}
+const impactInfo={
+ 'EXC-14784509':['Product integrity at risk · $28k load','Detected 18m after the power interruption'],
+ 'EXC-2481':['Late by 25–37h · $42k at risk','Detected 2h before the deadline'],
+ 'EXC-2479':['Quality release at risk · Pharma load','Detected 14h before the deadline'],
+ 'EXC-2476':['Late by 5–6 days','Detected 9 days before the deadline'],
+ 'EXC-2471':['Up to 15h late','Detected 30h before the deadline'],
+ 'EXC-2468':['Up to 8h late · $4k penalty','Detected 40h before the deadline'],
+ 'EXC-2464':['At risk · 2h of slack left','Detected 6h before the deadline'],
+ 'EXC-2461':['Up to 8h late','Detected 20h before the deadline'],
+ 'EXC-2459':['Proof required before release','Detected 18h before the deadline'],
+ 'EXC-2458':['Up to 8h late · $4k penalty','Detected 40h before the deadline'],
+ 'EXC-2456':['No reliable ETA','Detected 3h before the deadline']
+};
+try {
+ const saved=JSON.parse(localStorage.getItem('tiger-exceptions-v1'));
+ if(Array.isArray(saved)&&saved.length){
+  const normalized=saved.map(item=>item.id==='EXC-14784509'?{...item,p:'P2',title:'Reefer power interruption detected',route:'Kobe → Rotterdam',detail:'Cold-chain telemetry dropped for 18 min',time:'18m',owner:'You',uncertainty:'Possible · 72%'}:item);
+  exceptions=[...normalized,...exceptions.filter(item=>!normalized.some(savedItem=>savedItem.id===item.id))];
+  if(normalized.some((item,index)=>item!==saved[index])) localStorage.setItem('tiger-exceptions-v1',JSON.stringify(normalized));
+ }
+} catch (_) {}
 const evidence=[
  ['CR','Carrier event feed','Discharge estimate changed 14:20 → 09:15 (+19h)','Verified · 2m'],
  ['TM','Terminal milestone','Crane outage recorded at berth 4','Verified · 18m'],
@@ -44,6 +65,7 @@ const $=s=>document.querySelector(s)||{onclick:null,setAttribute(){},classList:{
 const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const priorityLabel=p=>({P1:'Critical',P2:'High',P3:'Medium'}[p]||'Medium');
 const transportMode=id=>({
+ 'EXC-14784509':['ship','<i class="hgi-stroke hgi-ship" aria-hidden="true"></i>','Ocean freight'],
  'EXC-2481':['ship','<i class="hgi-stroke hgi-ship" aria-hidden="true"></i>','Ocean freight'],
  'EXC-2479':['plane','<i class="hgi-stroke hgi-airplane-01" aria-hidden="true"></i>','Air freight'],
  'EXC-2476':['plane','<i class="hgi-stroke hgi-airplane-01" aria-hidden="true"></i>','Air freight'],
@@ -56,6 +78,7 @@ const transportMode=id=>({
  'EXC-2456':['plane','<i class="hgi-stroke hgi-airplane-01" aria-hidden="true"></i>','Air freight']
 }[id]||['truck','<i class="hgi-stroke hgi-truck" aria-hidden="true"></i>','Road freight']);
 const sourceIconClass=code=>({CR:'hgi-activity-01',TM:'hgi-clock-01',RL:'hgi-arrow-right-01',ET:'hgi-ai-beautify',SL:'hgi-file-01',CS:'hgi-user-group',GT:'hgi-location-01',EV:'hgi-activity-01',AI:'hgi-ai-beautify'}[code]||'hgi-information-circle');
+const impactMarkup=(e,esc=escapeHtml)=>{const info=impactInfo[e.id]||[e.detail];return `<strong>${esc(info[0])}</strong>`};
 function saveCases(){try{localStorage.setItem('tiger-exceptions-v1',JSON.stringify(exceptions));}catch(_){toast('Could not save locally; this change lasts until the page closes.')}}
 function applyPagination(){
  const rows=$$('#exception-list .exception-row');
@@ -70,7 +93,7 @@ function applyPagination(){
 function renderExceptions(){
  const visible=exceptions.filter(e=>currentFilter==='all'||(currentFilter==='critical'&&e.p==='P1')||(currentFilter==='mine'&&e.owner==='You')).sort((a,b)=>a.p.localeCompare(b.p));
  if(visible.length&&!visible.some(e=>e.id===selectedId)) selectedId=visible[0].id;
- $('#exception-list').innerHTML=visible.length?`<div class="exception-table" role="table" aria-label="Prioritized exceptions"><div class="exception-table-head" role="row"><span>ID</span><span>Priority</span><span>Exception</span><span>Route</span><span>Impact</span><span>Confidence</span><span>Owner</span><span>Actions</span></div>${visible.map(e=>{const places=e.route.split(' → '),mode=transportMode(e.id);return `<button class="exception-row ${e.id===selectedId?'active':''}" role="row" data-id="${escapeHtml(e.id)}"><span class="id-cell">${escapeHtml(e.id)}</span><span class="priority ${e.p.toLowerCase()}"><span class="priority-dot"></span>${e.p} · ${priorityLabel(e.p)}</span><span class="exception-name"><strong>${escapeHtml(e.title)}</strong></span><span class="route-journey"><span class="mode-icon ${mode[0]}" title="${mode[2]}">${mode[1]}</span><span class="route-stops"><span class="route-stop route-origin"><i class="stop-marker" aria-hidden="true"></i>${escapeHtml(places[0]||e.route)}</span><span class="route-stop route-destination"><i class="stop-marker" aria-hidden="true"></i>${escapeHtml(places[1]||'—')}</span></span></span><span class="impact-cell">${escapeHtml(e.detail)}</span><span class="uncertainty-cell">${escapeHtml(e.uncertainty)}</span><span class="owner-cell">${escapeHtml(e.owner)}</span><span class="row-action" aria-label="More actions"><i class="hgi-stroke hgi-more-horizontal" aria-hidden="true"></i></span></button>`}).join('')}</div>`:'<p class="empty-queue">No exceptions match this filter.</p>';
+ $('#exception-list').innerHTML=visible.length?`<div class="exception-table" role="table" aria-label="Prioritized exceptions"><div class="exception-table-head" role="row"><span>ID</span><span>Priority</span><span>Exception</span><span>Route</span><span>Impact</span><span>Confidence</span><span>Owner</span><span>Actions</span></div>${visible.map(e=>{const places=e.route.split(' → '),mode=transportMode(e.id);return `<button class="exception-row ${e.id===selectedId?'active':''}" role="row" data-id="${escapeHtml(e.id)}"><span class="id-cell">${escapeHtml(e.id)}</span><span class="priority ${e.p.toLowerCase()}"><span class="priority-dot"></span>${e.p} · ${priorityLabel(e.p)}</span><span class="exception-name"><strong>${escapeHtml(e.title)}</strong></span><span class="route-journey"><span class="mode-icon ${mode[0]}" title="${mode[2]}">${mode[1]}</span><span class="route-stops"><span class="route-stop route-origin"><i class="stop-marker" aria-hidden="true"></i>${escapeHtml(places[0]||e.route)}</span><span class="route-stop route-destination"><i class="stop-marker" aria-hidden="true"></i>${escapeHtml(places[1]||'—')}</span></span></span><span class="impact-cell">${impactMarkup(e)}</span><span class="uncertainty-cell">${escapeHtml(e.uncertainty)}</span><span class="owner-cell">${escapeHtml(e.owner)}</span><span class="row-action" aria-label="More actions"><i class="hgi-stroke hgi-more-horizontal" aria-hidden="true"></i></span></button>`}).join('')}</div>`:'<p class="empty-queue">No exceptions match this filter.</p>';
  $$('.exception-row').forEach(btn=>btn.onclick=()=>selectException(btn.dataset.id,true));
  const counts={all:exceptions.length,critical:exceptions.filter(e=>e.p==='P1').length,mine:exceptions.filter(e=>e.owner==='You').length};
  $$('.chip').forEach(b=>{b.textContent=({all:'All',critical:'Critical',mine:'Mine'}[b.dataset.filter])+' '+counts[b.dataset.filter]});
@@ -208,8 +231,8 @@ $$('.chip').forEach(button=>button.onclick=()=>setFilter(button.dataset.filter))
 $$('.filter-option').forEach(button=>button.onclick=()=>setFilter(button.dataset.filter));
 document.addEventListener('click',e=>{const button=e.target.closest('.pagination-btn');if(!button||button.disabled)return;const page=Number(button.dataset.page);if(!page)return;currentPage=page;renderExceptions();});
 document.addEventListener('click',()=>{$('#filter-popover').classList.add('hidden');$('#filter-toggle').setAttribute('aria-expanded','false');closeCaseMenu()});
-$$('.nav-item').forEach(n=>n.onclick=()=>{ $$('.nav-item').forEach(x=>x.classList.remove('active'));n.classList.add('active');if(n.dataset.view!=='inbox')toast(`${n.textContent.trim()} view is represented in the active case prototype`);});
-$$('.top-tab').forEach(n=>n.onclick=()=>{ $$('.top-tab').forEach(x=>x.classList.remove('active'));n.classList.add('active');if(n.dataset.view!=='inbox')toast(`${n.textContent.trim()} view is represented in the active case prototype`);});
+$$('button.nav-item').forEach(n=>n.onclick=()=>{ $$('.nav-item').forEach(x=>x.classList.remove('active'));n.classList.add('active');});
+$$('button.top-tab').forEach(n=>n.onclick=()=>{ $$('.top-tab').forEach(x=>x.classList.remove('active'));n.classList.add('active');});
 renderExceptions();renderEvidence();renderTimeline();renderAudit();renderResolution();
 
 /* -------------------------------------------------------------------------
@@ -219,6 +242,10 @@ renderExceptions();renderEvidence();renderTimeline();renderAudit();renderResolut
 (()=>{
  const LIMIT=2500;
  const scenarios={
+  'EXC-14784509':{kind:'Cold-chain power interruption',what:'Cold-chain telemetry dropped for 18 minutes during the Kobe transfer.',cause:'Reefer power was interrupted while the container waited for vessel connection.',impact:'Product integrity at risk · $28k load.',gap:'Terminal power confirmation and QA disposition.',confidence:'72%',sources:'4',actions:[
+   {id:'reefer-plug',name:'Transfer to powered reefer plug',desc:'Move the container to a monitored powered slot and preserve the cold chain.',recovery:'10h',cost:520,sla:'68%',risk:'Low risk',deps:[['verified','Powered reefer slot'],['gap','Terminal power confirmation']],note:'Maintains temperature control while the terminal confirms the interruption.'},
+   {id:'inspect-arrival',name:'Inspect at destination',desc:'Continue the voyage and complete a QA inspection before release at Rotterdam.',recovery:'0h',cost:0,sla:'31%',risk:'Higher risk',deps:[['gap','QA disposition']],note:'Lowest immediate cost, but product release remains uncertain.'}
+  ]},
   'EXC-2481':{kind:'Port disruption',what:'Vessel discharge moved by 19 hours. The connecting rail slot is no longer available.',cause:'Terminal congestion followed an unplanned crane outage.',impact:'31h predicted delay · SLA breach likely · $42k order at risk.',gap:'Confirmed terminal gate appointment.',confidence:'82%',sources:'7',actions:[
    {id:'expedite',name:'Expedite by dedicated truck',desc:'Move the container to Duisburg by road and connect to an earlier rail service.',recovery:'22h',cost:4850,sla:'76%',risk:'Higher risk',deps:[['gap','Gate appointment'],['verified','Truck quote QX-1187']],note:'A free truck cancellation is possible until Fri 11:00.'},
    {id:'rebook',name:'Rebook next rail departure',desc:'Accept the next confirmed rail slot and proactively update the customer.',recovery:'8h',cost:620,sla:'42%',risk:'Low risk',deps:[['verified','Priority rail slot']],note:'Arrives after the deadline in the slower recovery scenario.'},
@@ -251,7 +278,13 @@ renderExceptions();renderEvidence();renderTimeline();renderAudit();renderResolut
  const root=document.querySelector('.workspace'), view=document.querySelector('#product-view');
  const find=id=>exceptions.find(x=>x.id===id);
  const esc=escapeHtml;
- const scenario=id=>scenarios[id]||scenarios['EXC-2481'];
+ // User-created exceptions are lightweight records. Keep their details
+ // self-consistent instead of silently borrowing the P1 demo scenario.
+ const scenario=id=>{
+  if(scenarios[id]) return scenarios[id];
+  const e=find(id)||{};
+  return {kind:'Unclassified exception',what:e.detail||'A shipment signal requires coordinator review.',cause:'The cause has not been assessed yet.',impact:e.detail||'Operational impact is not yet estimated.',gap:'Supporting evidence and partner confirmation.',confidence:(e.uncertainty&&e.uncertainty.includes('%'))?(e.uncertainty.match(/\d+%/)||['Unverified'])[0]:'Unverified',sources:'0',actions:[]};
+ };
  const caseState=id=>state[id]||{stage:'decide',action:null,history:[]};
  const money=n=>n===0?'$0':new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n);
  const stamp=()=>new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
@@ -260,7 +293,7 @@ renderExceptions();renderEvidence();renderTimeline();renderAudit();renderResolut
  function renderQueue(){
   const visible=exceptions.filter(e=>currentFilter==='all'||(currentFilter==='critical'&&e.p==='P1')||(currentFilter==='mine'&&e.owner==='You'));
   const host=document.querySelector('#exception-list'); if(!host)return;
-  host.innerHTML=`<div class="exception-table" role="table" aria-label="Prioritized exceptions"><div class="exception-table-head" role="row"><span>ID</span><span>Priority</span><span>Exception</span><span>Route</span><span>Impact</span><span>Confidence</span><span>Owner</span><span>Actions</span></div>${visible.map(e=>{const [from,to]=e.route.split(' → ');const s=caseState(e.id);const mode=transportMode(e.id);return `<button class="exception-row ${e.id===activeId?'active':''}" role="row" data-scenario="${e.id}"><span class="id-cell">${e.id}</span><span class="priority ${e.p.toLowerCase()}"><span class="priority-dot"></span>${e.p} · ${priorityLabel(e.p)}</span><span class="exception-name"><strong>${esc(e.title)}</strong>${scenarios[e.id]?statePill(s):''}</span><span class="route-journey"><span class="mode-icon ${mode[0]}" title="${mode[2]}">${mode[1]}</span><span class="route-stops"><span class="route-stop route-origin"><i class="stop-marker"></i>${esc(from)}</span><span class="route-stop route-destination"><i class="stop-marker"></i>${esc(to||'—')}</span></span></span><span class="impact-cell">${esc(e.detail)}</span><span class="uncertainty-cell">${esc(e.uncertainty)}</span><span class="owner-cell">${esc(e.owner)}</span><span class="row-action"><i class="hgi-stroke hgi-more-horizontal"></i></span></button>`}).join('')}</div>`;
+  host.innerHTML=`<div class="exception-table" role="table" aria-label="Prioritized exceptions"><div class="exception-table-head" role="row"><span>ID</span><span>Priority</span><span>Exception</span><span>Route</span><span>Impact</span><span>Confidence</span><span>Owner</span><span>Actions</span></div>${visible.map(e=>{const [from,to]=e.route.split(' → ');const s=caseState(e.id);const mode=transportMode(e.id);return `<button class="exception-row ${e.id===activeId?'active':''}" role="row" data-scenario="${e.id}"><span class="id-cell">${e.id}</span><span class="priority ${e.p.toLowerCase()}"><span class="priority-dot"></span>${e.p} · ${priorityLabel(e.p)}</span><span class="exception-name"><strong>${esc(e.title)}</strong>${scenarios[e.id]?statePill(s):''}</span><span class="route-journey"><span class="mode-icon ${mode[0]}" title="${mode[2]}">${mode[1]}</span><span class="route-stops"><span class="route-stop route-origin"><i class="stop-marker"></i>${esc(from)}</span><span class="route-stop route-destination"><i class="stop-marker"></i>${esc(to||'—')}</span></span></span><span class="impact-cell">${impactMarkup(e,esc)}</span><span class="uncertainty-cell">${esc(e.uncertainty)}</span><span class="owner-cell">${esc(e.owner)}</span><span class="row-action"><i class="hgi-stroke hgi-more-horizontal"></i></span></button>`}).join('')}</div>`;
   host.querySelectorAll('[data-scenario]').forEach(b=>b.onclick=()=>openCase(b.dataset.scenario));
   document.querySelector('#open-count').textContent=exceptions.length;
   document.querySelector('.nav-item[data-view="inbox"] .nav-count').textContent=exceptions.length;
@@ -270,7 +303,7 @@ renderExceptions();renderEvidence();renderTimeline();renderAudit();renderResolut
  }
  function renderActions(){
   const d=scenario(activeId), s=caseState(activeId), el=document.querySelector('#action-options'); if(!el)return;
-  if(s.stage!=='decide'){el.innerHTML='';return;}
+  if(s.stage!=='decide'||!d.actions.length){el.innerHTML='';return;}
   const selected=d.actions.find(a=>a.id===activeAction)||d.actions[0];
   const gaps=selected.deps.filter(([kind])=>kind==='gap');
   const verified=selected.deps.filter(([kind])=>kind==='verified');
@@ -284,6 +317,9 @@ renderExceptions();renderEvidence();renderTimeline();renderAudit();renderResolut
  }
  function renderCase(){
   const e=find(activeId), d=scenario(activeId), s=caseState(activeId); if(!e)return;
+  const isScenario=Boolean(scenarios[activeId]);
+  document.querySelector('.actions-section').classList.toggle('hidden',!isScenario);
+  document.querySelector('.resolution-section').classList.toggle('hidden',!isScenario);
   document.querySelector('#case-title').textContent=e.title;
   document.querySelector('#case-meta').childNodes[0].nodeValue=`${e.id} · ${e.route} `;
   document.querySelector('#priority-badge').textContent=`${e.p} ${priorityLabel(e.p)}`;
@@ -312,7 +348,7 @@ renderExceptions();renderEvidence();renderTimeline();renderAudit();renderResolut
   if(s.stage==='ready'){detail.textContent='A verified checkpoint supports the selected recovery path.';checkpoint.textContent='Ready for closure review';checkpointDetail.textContent='Coordinator must confirm remaining outcome criteria.';note.className='resolution-evidence verified';note.innerHTML='<i class="hgi-stroke hgi-checkmark-circle-02"></i><span>Verified update received. Review closure criteria or wait for another signal.</span>';close.disabled=false;simulate.textContent='Simulate contradictory event';}
   if(s.stage==='closed'){detail.textContent='Resolution was confirmed; ongoing monitoring can reopen the case.';checkpoint.textContent='Continuous monitoring';checkpointDetail.textContent='Contradictory events reopen this exception.';note.className='resolution-evidence closed';note.innerHTML='<i class="hgi-stroke hgi-checkmark-circle-02"></i><span>Resolution criteria were confirmed. Decision and evidence history are retained.</span>';reopen.classList.remove('hidden');simulate.classList.add('hidden');}
  }
- function openCase(id){activeId=scenarios[id]?id:'EXC-2481';activeAction=scenario(activeId).actions[0].id;activeView='inbox';showView('inbox');document.body.classList.add('drawer-open');document.documentElement.classList.add('drawer-open');renderCase();}
+ function openCase(id){activeId=id;activeAction=scenario(activeId).actions[0]?.id||null;activeView='inbox';showView('inbox');document.body.classList.add('drawer-open');document.documentElement.classList.add('drawer-open');renderCase();}
  function approve(id){const d=scenario(activeId), a=d.actions.find(x=>x.id===id), needs=a.cost>LIMIT;openModal(`<p class="eyebrow">${needs?'Approval threshold':'Action approval'}</p><h2>${esc(a.name)}</h2><p>${needs?`This action adds ${money(a.cost)}, above the ${money(LIMIT)} coordinator threshold.`:'This action is within the coordinator approval threshold.'}</p><div class="modal-summary"><strong>Dependencies and authority</strong><div class="check-list">${a.deps.map(([kind,text])=>`<span><i class="hgi-stroke ${kind==='gap'?'hgi-alert-circle':'hgi-checkmark-circle-02'}"></i>${kind==='gap'?'Open dependency: ':'Verified: '}${esc(text)}</span>`).join('')}<span><i class="hgi-stroke hgi-checkmark-circle-02"></i>Duplicate action check passed</span></div></div><label class="confirm-check"><input id="decision-ack" type="checkbox"> I understand the cost, dependencies and operational exposure.</label><div class="modal-actions"><button class="ghost" id="decision-cancel">Go back</button><button class="primary" id="decision-confirm">${needs?'Send for sign-off':'Confirm and monitor'}</button></div>`);document.querySelector('#decision-cancel').onclick=closeModal;document.querySelector('#decision-confirm').onclick=()=>{if(!document.querySelector('#decision-ack').checked){toast('Acknowledge the decision details first');return;}const s=caseState(activeId);s.action=id;s.stage=needs?'signoff':'monitoring';record(activeId,needs?`Submitted ${a.name} for manager sign-off`:`Approved ${a.name} within coordinator authority`);closeModal();renderCase();toast(needs?'Sent for simulated manager sign-off':'Action approved and now monitored');};}
  function override(id){const a=scenario(activeId).actions.find(x=>x.id===id);openModal(`<p class="eyebrow">Human override</p><h2>Correct the recommendation</h2><p>Record what the coordinator knows that the AI does not. This becomes a learning-review candidate; it does not change live systems.</p><label>Reason<textarea id="override-note" style="width:100%;min-height:82px;margin-top:6px;border:1px solid #dce3e7;border-radius:8px;padding:10px">Customer relationship or operational context changes the preferred response.</textarea></label><div class="modal-actions"><button class="ghost" id="override-cancel">Cancel</button><button class="primary" id="override-save">Record override</button></div>`);document.querySelector('#override-cancel').onclick=closeModal;document.querySelector('#override-save').onclick=()=>{const s=caseState(activeId);s.action=id;s.stage='decide';record(activeId,`Human override recorded for ${a.name}`);closeModal();renderCase();toast('Override recorded for Learning review');};}
  function requestInfo(){const d=scenario(activeId);openModal(`<p class="eyebrow">Missing information</p><h2>Request ${esc(d.gap)}</h2><p>This is a simulated request. The exception remains open and no action is approved while evidence is missing.</p><div class="modal-summary"><strong>Expected response</strong><p>Carrier, terminal, broker, or customer confirmation that can change the recommended recovery path.</p></div><div class="modal-actions"><button class="ghost" id="request-cancel">Cancel</button><button class="primary" id="request-send">Record request</button></div>`);document.querySelector('#request-cancel').onclick=closeModal;document.querySelector('#request-send').onclick=()=>{const s=caseState(activeId);s.stage='awaiting-info';s.requested=d.gap;record(activeId,`Information request recorded: ${d.gap}`);closeModal();renderCase();toast('Request recorded; case is awaiting information');};}
@@ -324,11 +360,11 @@ renderExceptions();renderEvidence();renderTimeline();renderAudit();renderResolut
   if(name==='monitoring'){const work=cases.filter(x=>['awaiting-info','signoff','monitoring','ready'].includes(x.s.stage));view.innerHTML=head('Live monitoring','Exceptions that need evidence, authority, or outcome follow-through.')+`<div class="ops-grid">${(work.length?work:cases.slice(0,3)).map(x=>`<article class="ops-card"><div>${statePill(x.s)}</div><h3>${esc(x.e.title)}</h3><p>${x.s.action?`${esc(x.d.actions.find(a=>a.id===x.s.action)?.name||'Selected response')} is active.`:'No approved action yet.'}</p><div class="ops-meta"><span>${esc(x.e.id)}</span><button class="ghost" data-open="${x.id}">Open case</button></div></article>`).join('')}</div>`;}
   if(name==='decisions'){const events=cases.flatMap(x=>x.s.history.map(h=>({...h,id:x.id,title:x.e.title,stage:x.s.stage})));view.innerHTML=head('Decision history','A transparent record of AI recommendations, human decisions, and operational outcomes.')+`<div class="history-table"><div class="history-row head"><span>When</span><span>Exception</span><span>Decision</span><span>Actor</span></div>${(events.length?events:[{at:'—',id:'No decisions yet',title:'Approve a response to begin the history.',event:'Awaiting coordinator decision',actor:'—'}]).map(h=>`<div class="history-row"><span>${h.at}</span><span><b>${h.id}</b><small>${esc(h.title)}</small></span><span>${esc(h.event)}</span><span>${esc(h.actor)}</span></div>`).join('')}</div>`;}
   if(name==='learning'){const overrides=cases.flatMap(x=>x.s.history.filter(h=>h.event.includes('override')).map(h=>({...h,x})));view.innerHTML=head('Learning review','Human corrections are retained as reviewable evidence—not automatically turned into AI policy.')+`${overrides.length?overrides.map(o=>`<article class="learning-card"><span class="badge uncertainty">Assessment correction</span><h3>${esc(o.x.e.title)}</h3><p>The coordinator preferred a different response. Review whether the context should inform future recommendations.</p><div class="learning-compare"><div><span>AI recommendation</span>${esc(o.x.d.actions[0].name)}</div><div><span>Coordinator decision</span>${esc(o.x.d.actions.find(a=>a.id===o.x.s.action)?.name||'Recorded override')}</div></div></article>`).join(''):`<article class="learning-card"><span class="badge owner">No review items yet</span><h3>Human corrections will appear here</h3><p>When a coordinator overrides a recommendation, the reason is preserved for later review. It does not automatically retrain or change policy.</p></article>`}`;}
-  if(name==='audit'){const events=cases.flatMap(x=>x.s.history.map(h=>({...h,id:x.id})));view.innerHTML=head('Audit log','Human, AI, and system events retained for accountability in this local prototype.')+`<div class="history-table"><div class="history-row head"><span>When</span><span>Exception</span><span>Event</span><span>Actor</span></div>${events.map(h=>`<div class="history-row"><span>${h.at}</span><span>${h.id}</span><span>${esc(h.event)}</span><span>${esc(h.actor)}</span></div>`).join('')||'<div class="history-row"><span>—</span><span>—</span><span>Activity will appear when a decision is made.</span><span>—</span></div>'}</div>`;}
+  if(name==='audit'){const events=cases.flatMap(x=>x.s.history.map(h=>({...h,id:x.id})));view.innerHTML=head('Reports','Human, AI, and system events retained for accountability in this local prototype.')+`<div class="history-table"><div class="history-row head"><span>When</span><span>Exception</span><span>Event</span><span>Actor</span></div>${events.map(h=>`<div class="history-row"><span>${h.at}</span><span>${h.id}</span><span>${esc(h.event)}</span><span>${esc(h.actor)}</span></div>`).join('')||'<div class="history-row"><span>—</span><span>—</span><span>Activity will appear when a decision is made.</span><span>—</span></div>'}</div>`;}
   view.querySelector('[data-back]').onclick=()=>showView('inbox');view.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openCase(b.dataset.open));
  }
- function showView(name){activeView=name;root.classList.toggle('hidden',name!=='inbox');view.classList.toggle('hidden',name==='inbox');document.querySelector('#page-title').textContent=name==='inbox'?'Exception inbox':({monitoring:'Live monitoring',decisions:'Decision history',learning:'Learning review',audit:'Audit log'})[name];document.querySelectorAll('.nav-item,.top-tab').forEach(b=>b.classList.toggle('active',b.dataset.view===name));if(name!=='inbox')renderProductView(name);}
- document.querySelectorAll('.nav-item,.top-tab').forEach(b=>b.onclick=()=>showView(b.dataset.view));
+ function showView(name){activeView=name;root.classList.toggle('hidden',name!=='inbox');view.classList.toggle('hidden',name==='inbox');document.querySelector('#page-title').textContent=name==='inbox'?'Exception inbox':({monitoring:'Live monitoring',decisions:'Decision history',learning:'Learning review',audit:'Reports'})[name];document.querySelectorAll('.nav-item,.top-tab').forEach(b=>b.classList.toggle('active',b.dataset.view===name));if(name!=='inbox')renderProductView(name);}
+ document.querySelectorAll('button.nav-item,button.top-tab').forEach(b=>b.onclick=()=>showView(b.dataset.view));
  document.querySelector('#request-info').onclick=requestInfo;document.querySelector('#simulate-update').onclick=simulate;document.querySelector('#review-closure').onclick=closeCase;document.querySelector('#reopen-case').onclick=()=>{const s=caseState(activeId);s.stage='monitoring';record(activeId,'Exception reopened after new information','system/event-correlation');renderCase();toast('Exception reopened and returned to monitoring');};
  document.querySelector('#explain-ai').onclick=()=>{const d=scenario(activeId);openModal(`<p class="eyebrow">Reasoning trace</p><h2>Why this exception is prioritized</h2><p>The assessment joins operational events, service commitments, and historical context. It separates verified events from AI inference and open data.</p><div class="modal-summary"><strong>Current support</strong><p>${d.sources} verified sources support this assessment. Confidence is ${d.confidence}; it is not a guarantee.</p><p><b>Open information:</b> ${esc(d.gap)}</p></div><div class="modal-actions"><button class="primary" id="explain-done">Done</button></div>`);document.querySelector('#explain-done').onclick=closeModal;};
  document.querySelector('#view-decision-audit').onclick=()=>showView('decisions');

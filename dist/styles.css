@@ -115,6 +115,13 @@ main{max-width:none!important;width:100%!important;margin:0!important;padding:0 
 .uncertainty-cell,
 .owner-cell{font-size:14px!important}
 
+/* Sidebar status labels and scan-friendly impact hierarchy. */
+.nav-soon{display:inline-flex;align-items:center;justify-content:center;min-width:46px;height:24px;padding:0 9px;background:#2b2b2b;color:#a8a8a8;font-size:12px;font-weight:450;line-height:1;border-radius:999px!important}
+.nav-item,.top-tab{text-decoration:none}
+.nav-item:hover .nav-soon{background:#383838;color:#d7d7d7}
+.impact-cell{display:flex!important;flex-direction:column;align-items:flex-start;line-height:1.25!important;white-space:normal}
+.impact-cell strong{font-size:14px;font-weight:500;color:var(--ink);line-height:1.3}
+
 /* Global utility navigation and drawer type hierarchy. */
 .global-utility{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:#fff;border-bottom:1px solid var(--hairline)}
 .utility-product{color:var(--ink);font-size:14px;font-weight:500;letter-spacing:-.01em}
@@ -1056,6 +1063,12 @@ body *:not(.hgi-stroke){
   font-weight:450!important;
   letter-spacing:0!important;
 }
+.brand .brand-logo{
+  display:block!important;
+  width:136px!important;
+  height:auto!important;
+  max-width:100%;
+}
 .exception-table-head,
 .exception-table-head > *{
   font-size:14px!important;
@@ -1139,4 +1152,67 @@ body *:not(.hgi-stroke){
   box-shadow:0 14px 30px rgba(20,24,32,.14),0 3px 8px rgba(20,24,32,.08)!important;
 }
 .filter-option{border-radius:8px!important}
+
+/* Motion system: quiet feedback for an operational workspace.
+   Motion communicates a state change; it never loops on primary task content. */
+@media (prefers-reduced-motion:no-preference){
+  .sidebar{animation:sidebar-arrive .46s cubic-bezier(.2,.8,.2,1) both}
+  /* Do not animate main or .workspace: both contain the fixed case drawer.
+     Transforming either creates a stacking context above its own backdrop. */
+  .topbar{animation:workspace-arrive .42s .06s cubic-bezier(.2,.8,.2,1) both}
+  .queue-panel{animation:workspace-arrive .46s .12s cubic-bezier(.2,.8,.2,1) both}
+  .kpis article{animation:kpi-arrive .42s cubic-bezier(.2,.8,.2,1) both}
+  .kpis article:nth-child(1){animation-delay:.13s}
+  .kpis article:nth-child(2){animation-delay:.18s}
+  .kpis article:nth-child(3){animation-delay:.23s}
+  .kpis article:nth-child(4){animation-delay:.28s}
+
+  .nav-item,.top-tab,.primary,.ghost,.icon-button,.row-action,.pagination-btn{
+    transition:transform .18s cubic-bezier(.2,.8,.2,1),background-color .18s ease,border-color .18s ease,color .18s ease,box-shadow .18s ease;
+  }
+  .nav-item:hover{transform:translateX(3px)}
+  .primary:hover,.ghost:hover,.icon-button:hover,.row-action:hover{transform:translateY(-1px)}
+  .primary:active,.ghost:active,.icon-button:active,.row-action:active{transform:translateY(0) scale(.97)}
+  /* Keep hover feedback inside the row's existing box. Translating a full-width
+     grid row creates horizontal overflow in the scrollable table wrapper, so
+     the browser can flash a scrollbar on only the hovered row. */
+  .exception-row{transition:background-color .18s ease,box-shadow .18s ease}
+  .exception-row:hover{background:var(--canvas-soft)}
+  .exception-row:nth-child(2){animation:row-arrive .34s .16s both}
+  .exception-row:nth-child(3){animation:row-arrive .34s .2s both}
+  .exception-row:nth-child(4){animation:row-arrive .34s .24s both}
+  .exception-row:nth-child(5){animation:row-arrive .34s .28s both}
+  .exception-row:nth-child(6){animation:row-arrive .34s .32s both}
+  .exception-row:nth-child(7){animation:row-arrive .34s .36s both}
+
+  .drawer-open .case-content > section:not(.hidden){animation:detail-arrive .34s cubic-bezier(.2,.8,.2,1) both}
+  .drawer-open .case-content > section:nth-child(2){animation-delay:.05s}
+  .drawer-open .case-content > section:nth-child(3){animation-delay:.1s}
+  .drawer-open .case-content > section:nth-child(4){animation-delay:.15s}
+  .response-details{animation:response-expand .28s cubic-bezier(.2,.8,.2,1) both}
+  .response-row .response-chevron .hgi-stroke{transition:transform .22s cubic-bezier(.2,.8,.2,1)}
+  .response-row:hover .response-chevron .hgi-stroke{transform:translateX(2px)}
+  .response-row.selected:hover .response-chevron .hgi-stroke{transform:translateY(1px)}
+  .evidence-link{transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s ease,border-color .18s ease}
+  .evidence-link:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0,.07)}
+  .evidence-meter i{transform-origin:left;animation:evidence-fill .7s .16s cubic-bezier(.2,.8,.2,1) both}
+  .filter-popover:not(.hidden){transform-origin:top right;animation:popover-in .18s cubic-bezier(.2,.8,.2,1) both}
+  .toast:not(.hidden){animation:toast-in .26s cubic-bezier(.2,.8,.2,1) both}
+}
+
+@keyframes sidebar-arrive{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+/* End at `none`, rather than translateY(0), so main does not retain a
+   stacking context that would sit above the fixed drawer backdrop. */
+@keyframes workspace-arrive{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes kpi-arrive{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes row-arrive{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@keyframes detail-arrive{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes response-expand{from{opacity:0;transform:translateY(-6px);clip-path:inset(0 0 100% 0)}to{opacity:1;transform:translateY(0);clip-path:inset(0 0 0 0)}}
+@keyframes evidence-fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes popover-in{from{opacity:0;transform:translateY(-5px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes toast-in{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
+}
 
