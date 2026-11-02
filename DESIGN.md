@@ -1,8 +1,8 @@
-# Logistics Exception Control — Product Design Case Study
+# Exceptra — Product Design Case Study
 
 ## 1. Overview
 
-Logistics Exception Control is an AI-assisted control-tower prototype for shipment exceptions. It helps logistics coordinators move from a fragmented operational signal to an accountable decision and a verified outcome.
+Exceptra is an AI-assisted control-tower prototype for shipment exceptions. It helps logistics coordinators move from a fragmented operational signal to an accountable decision and a verified outcome.
 
 The product is not designed to replace a coordinator. It is designed to reduce manual investigation, make trade-offs legible, and keep a human responsible for approvals and closure.
 

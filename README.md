@@ -1,6 +1,8 @@
-# Logistics Exception Control
+# Exceptra
 
-An AI-assisted control tower that helps logistics coordinators detect, understand, decide, and follow through on shipment exceptions without surrendering human accountability.
+Exceptra is an AI-assisted logistics exception control tower. The name is derived from “exception,” just as Transatisfy is derived from “transport”: it says what the product does while remaining distinctive and easy to own.
+
+It helps logistics coordinators detect, understand, decide, and follow through on shipment exceptions without surrendering human accountability.
 
 [Open the live GitHub Pages prototype](https://souravdhali03.github.io/logistics-exception-control/) · [View the repository](https://github.com/SouravDhali03/logistics-exception-control) · [Read the design case study](./DESIGN.md)
 
