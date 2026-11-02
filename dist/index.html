@@ -6,7 +6,10 @@
   <meta name="description" content="Exceptra — AI-assisted shipment exception management with human-controlled decisions." />
   <title>Exceptra · Logistics exception control</title>
   <link rel="stylesheet" href="https://use.hugeicons.com/font/icons.css" />
-    <link rel="stylesheet" href="styles.css?v=20261102-27" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css?v=20261102-28" />
 </head>
 <body>
   <div class="app-shell">
@@ -25,14 +28,16 @@
 
     <main>
       <header class="page-utility" aria-label="Global actions">
-        <p class="utility-greeting"><i class="hgi-stroke hgi-sun-01" aria-hidden="true"></i> Good morning, Sourav</p>
+        <p class="utility-greeting type-h5"><i class="hgi-stroke hgi-sun-01" aria-hidden="true"></i> Good morning, Sourav</p>
         <div class="utility-network" aria-label="Network status: Stable, 24 sources connected">
           <span class="utility-network-label">Network status</span>
           <span class="utility-network-state"><b aria-hidden="true"></b>Stable</span>
-          <span class="utility-network-detail">24 sources connected</span>
+          <span class="network-resources" tabindex="0" role="img" aria-label="24 sources connected" data-tooltip="24 sources connected">
+            <i class="hgi-stroke hgi-wifi-connected-01" aria-hidden="true"></i>
+          </span>
         </div>
         <div class="hero-actions">
-          <button class="hero-notifications icon-button" id="notifications" aria-label="Notifications"><i class="hgi-stroke hgi-notification-01" aria-hidden="true"></i></button>
+          <button class="hero-notifications icon-button" id="notifications" aria-label="Notifications, 3 unread"><i class="hgi-stroke hgi-notification-01" aria-hidden="true"></i><b class="notification-badge" aria-hidden="true">3</b></button>
           <button class="hero-avatar" aria-label="Account menu"><img src="assets/header-avatar.png" alt="Sourav Dhali"></button>
           <button class="utility-menu-toggle" aria-label="Open account menu"><i class="hgi-stroke hgi-arrow-down-01" aria-hidden="true"></i></button>
         </div>
@@ -45,7 +50,7 @@
         <a class="top-tab" href="coming-soon.html?feature=Reports" data-app-page><i class="hgi-stroke hgi-clipboard-list" aria-hidden="true"></i>Reports</a>
       </nav>
       <header class="topbar">
-        <div class="topbar-brand"><div><p class="eyebrow">Operations control tower · Demo</p><h1 id="page-title">Exception inbox</h1></div></div>
+        <div class="topbar-brand"><div><p class="eyebrow">Operations control tower</p><h1 id="page-title" class="type-h4">Exception inbox</h1></div></div>
         <div class="top-actions"><button class="primary small" id="new-exception"><i class="hgi-stroke hgi-add-01" aria-hidden="true"></i>New exception</button></div>
       </header>
 
@@ -58,7 +63,7 @@
 
       <section class="workspace">
         <aside class="queue-panel">
-          <div class="panel-head"><div><h2>Prioritized queue</h2><span>Updated just now</span></div><div class="filter-control"><button class="icon-button" id="filter-toggle" aria-label="Filter exceptions" aria-expanded="false" aria-controls="filter-popover"><i class="hgi-stroke hgi-filter-horizontal" aria-hidden="true"></i></button><div class="filter-popover hidden" id="filter-popover"><p>Show exceptions</p><button class="filter-option active" data-filter="all"><span>All exceptions</span><b>6</b></button><button class="filter-option" data-filter="critical"><span>Critical only</span><b>1</b></button><button class="filter-option" data-filter="mine"><span>Assigned to me</span><b>3</b></button></div></div></div>
+          <div class="panel-head"><div><h2 class="type-h5">Prioritized queue</h2><span>Updated just now</span></div><div class="filter-control"><button class="icon-button" id="filter-toggle" aria-label="Filter exceptions" aria-expanded="false" aria-controls="filter-popover"><i class="hgi-stroke hgi-filter-horizontal" aria-hidden="true"></i></button><div class="filter-popover hidden" id="filter-popover"><p>Show exceptions</p><button class="filter-option active" data-filter="all"><span>All exceptions</span><b>6</b></button><button class="filter-option" data-filter="critical"><span>Critical only</span><b>1</b></button><button class="filter-option" data-filter="mine"><span>Assigned to me</span><b>3</b></button></div></div></div>
           <div id="exception-list" class="exception-list"></div>
           <nav class="queue-pagination" id="queue-pagination" aria-label="Exception queue pages"></nav>
         </aside>

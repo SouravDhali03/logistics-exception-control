@@ -1,5 +1,5 @@
 let exceptions=[
- {id:'EXC-14784509',p:'P2',title:'Reefer power interruption detected',route:'Kobe → Rotterdam',detail:'Cold-chain telemetry dropped for 18 min',time:'18m',owner:'You',uncertainty:'Possible · 72%'},
+ {id:'EXC-2457',p:'P2',title:'Reefer power interruption detected',route:'Kobe → Rotterdam',detail:'Cold-chain telemetry dropped for 18 min',time:'18m',owner:'You',uncertainty:'Possible · 72%'},
  {id:'EXC-2481',p:'P1',title:'Port congestion threatens delivery',route:'Rotterdam → Chicago',detail:'31h predicted delay · $42k at risk',time:'2m',owner:'You',uncertainty:'Likely · 82%'},
  {id:'EXC-2479',p:'P2',title:'Temperature excursion detected',route:'Singapore → Frankfurt',detail:'8.4°C for 22 min · Pharma',time:'11m',owner:'Mina',uncertainty:'Confirmed'},
  {id:'EXC-2476',p:'P2',title:'Customs documents incomplete',route:'Dhaka → Toronto',detail:'Commercial invoice mismatch',time:'26m',owner:'You',uncertainty:'Possible · 64%'},
@@ -12,7 +12,7 @@ let exceptions=[
  {id:'EXC-2456',p:'P3',title:'Temperature logger offline',route:'Osaka → Vancouver',detail:'No telemetry received for 3h',time:'7h',owner:'Nadia',uncertainty:'Possible · 55%'}
 ];
 const impactInfo={
- 'EXC-14784509':['Product integrity at risk · $28k load','Detected 18m after the power interruption'],
+ 'EXC-2457':['Product integrity at risk · $28k load','Detected 18m after the power interruption'],
  'EXC-2481':['Late by 25–37h · $42k at risk','Detected 2h before the deadline'],
  'EXC-2479':['Quality release at risk · Pharma load','Detected 14h before the deadline'],
  'EXC-2476':['Late by 5–6 days','Detected 9 days before the deadline'],
@@ -27,7 +27,7 @@ const impactInfo={
 try {
  const saved=JSON.parse(localStorage.getItem('tiger-exceptions-v1'));
  if(Array.isArray(saved)&&saved.length){
-  const normalized=saved.map(item=>item.id==='EXC-14784509'?{...item,p:'P2',title:'Reefer power interruption detected',route:'Kobe → Rotterdam',detail:'Cold-chain telemetry dropped for 18 min',time:'18m',owner:'You',uncertainty:'Possible · 72%'}:item);
+  const normalized=saved.map(item=>{const migrated=item.id==='EXC-14784509'?{...item,id:'EXC-2457'}:item;return migrated.id==='EXC-2457'?{...migrated,p:'P2',title:'Reefer power interruption detected',route:'Kobe → Rotterdam',detail:'Cold-chain telemetry dropped for 18 min',time:'18m',owner:'You',uncertainty:'Possible · 72%'}:migrated});
   exceptions=[...normalized,...exceptions.filter(item=>!normalized.some(savedItem=>savedItem.id===item.id))];
   if(normalized.some((item,index)=>item!==saved[index])) localStorage.setItem('tiger-exceptions-v1',JSON.stringify(normalized));
  }
@@ -65,7 +65,7 @@ const $=s=>document.querySelector(s)||{onclick:null,setAttribute(){},classList:{
 const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const priorityLabel=p=>({P1:'Critical',P2:'High',P3:'Medium'}[p]||'Medium');
 const transportMode=id=>({
- 'EXC-14784509':['ship','<i class="hgi-stroke hgi-ship" aria-hidden="true"></i>','Ocean freight'],
+ 'EXC-2457':['ship','<i class="hgi-stroke hgi-ship" aria-hidden="true"></i>','Ocean freight'],
  'EXC-2481':['ship','<i class="hgi-stroke hgi-ship" aria-hidden="true"></i>','Ocean freight'],
  'EXC-2479':['plane','<i class="hgi-stroke hgi-airplane-01" aria-hidden="true"></i>','Air freight'],
  'EXC-2476':['plane','<i class="hgi-stroke hgi-airplane-01" aria-hidden="true"></i>','Air freight'],
@@ -242,7 +242,7 @@ renderExceptions();renderEvidence();renderTimeline();renderAudit();renderResolut
 (()=>{
  const LIMIT=2500;
  const scenarios={
-  'EXC-14784509':{kind:'Cold-chain power interruption',what:'Cold-chain telemetry dropped for 18 minutes during the Kobe transfer.',cause:'Reefer power was interrupted while the container waited for vessel connection.',impact:'Product integrity at risk · $28k load.',gap:'Terminal power confirmation and QA disposition.',confidence:'72%',sources:'4',actions:[
+  'EXC-2457':{kind:'Cold-chain power interruption',what:'Cold-chain telemetry dropped for 18 minutes during the Kobe transfer.',cause:'Reefer power was interrupted while the container waited for vessel connection.',impact:'Product integrity at risk · $28k load.',gap:'Terminal power confirmation and QA disposition.',confidence:'72%',sources:'4',actions:[
    {id:'reefer-plug',name:'Transfer to powered reefer plug',desc:'Move the container to a monitored powered slot and preserve the cold chain.',recovery:'10h',cost:520,sla:'68%',risk:'Low risk',deps:[['verified','Powered reefer slot'],['gap','Terminal power confirmation']],note:'Maintains temperature control while the terminal confirms the interruption.'},
    {id:'inspect-arrival',name:'Inspect at destination',desc:'Continue the voyage and complete a QA inspection before release at Rotterdam.',recovery:'0h',cost:0,sla:'31%',risk:'Higher risk',deps:[['gap','QA disposition']],note:'Lowest immediate cost, but product release remains uncertain.'}
   ]},
