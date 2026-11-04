@@ -9,12 +9,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=20261104-31" />
+    <link rel="stylesheet" href="styles.css?v=20261104-42" />
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar">
       <div class="brand">
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false" onclick="const sidebar=this.closest('.sidebar');const open=sidebar.classList.toggle('is-open');this.setAttribute('aria-expanded',String(open));this.setAttribute('aria-label',open?'Close navigation menu':'Open navigation menu');"><i class="hgi-stroke hgi-menu-01" aria-hidden="true"></i></button>
         <img class="brand-logo" src="assets/logo.svg" alt="Exceptra" />
       </div>
       <nav aria-label="Primary">
@@ -159,7 +160,7 @@
     </section>
   </div>
   <div class="toast hidden" id="toast" role="status"></div>
-  <script src="app.js?v=20261104-28"></script>
+  <script src="app.js?v=20261104-31"></script>
   <script>document.addEventListener('click',event=>{const link=event.target.closest('a[data-app-page]');if(!link||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;event.preventDefault();window.location.assign(link.href);});</script>
 </body>
 </html>

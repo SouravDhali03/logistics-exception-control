@@ -232,6 +232,8 @@ document.addEventListener('click',e=>{const button=e.target.closest('.pagination
 document.addEventListener('click',()=>{$('#filter-popover').classList.add('hidden');$('#filter-toggle').setAttribute('aria-expanded','false');closeCaseMenu()});
 $$('button.nav-item').forEach(n=>n.onclick=()=>{ $$('.nav-item').forEach(x=>x.classList.remove('active'));n.classList.add('active');});
 $$('button.top-tab').forEach(n=>n.onclick=()=>{ $$('.top-tab').forEach(x=>x.classList.remove('active'));n.classList.add('active');});
+const mobileMenu=$('#mobile-menu-toggle');
+$$('.sidebar .nav-item').forEach(item=>item.addEventListener('click',()=>{document.querySelector('.sidebar')?.classList.remove('is-open');mobileMenu?.setAttribute('aria-expanded','false');mobileMenu?.setAttribute('aria-label','Open navigation menu');}));
 renderExceptions();renderEvidence();renderTimeline();renderAudit();renderResolution();
 
 /* -------------------------------------------------------------------------
