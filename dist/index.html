@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=20261102-28" />
+    <link rel="stylesheet" href="styles.css?v=20261104-31" />
 </head>
 <body>
   <div class="app-shell">
@@ -125,7 +125,7 @@
               <section class="approved-decision hidden" id="approved-decision" aria-label="Approved response">
                 <div><p class="eyebrow">Decision recorded</p><h3 id="approved-decision-title">Approved action</h3><p id="approved-decision-description">The selected response is now being monitored.</p></div>
                 <div class="approved-decision-metrics" id="approved-decision-metrics"></div>
-                <div class="approved-decision-actions"><button class="ghost" id="view-decision-audit" type="button">View decision history</button><span>Alternatives retained in audit</span></div>
+                <div class="approved-decision-actions"><button class="ghost" id="view-decision-audit" type="button">View history</button><span>Alternatives retained in audit</span></div>
               </section>
             </section>
 
@@ -149,7 +149,6 @@
           <div class="case-content hidden" id="audit-tab"><section class="card"><div class="section-title"><div><p class="eyebrow">Immutable history</p><h3>Decision and action audit</h3></div><button class="ghost">Export JSON</button></div><div id="audit-list" class="audit-list"></div></section></div>
         </section>
       </section>
-      <section class="product-view hidden" id="product-view" aria-live="polite"></section>
     </main>
   </div>
 
@@ -160,7 +159,7 @@
     </section>
   </div>
   <div class="toast hidden" id="toast" role="status"></div>
-  <script src="app.js?v=20261102-22"></script>
+  <script src="app.js?v=20261104-28"></script>
   <script>document.addEventListener('click',event=>{const link=event.target.closest('a[data-app-page]');if(!link||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;event.preventDefault();window.location.assign(link.href);});</script>
 </body>
 </html>

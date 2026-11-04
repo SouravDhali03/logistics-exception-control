@@ -200,7 +200,6 @@ $('#review-closure').onclick=()=>{
  $('#cancel-closure').onclick=closeModal; $('#confirm-closure').onclick=()=>{const complete=['criteria-milestone','criteria-action','criteria-risk','criteria-alerts'].every(id=>$('#'+id).checked);if(!complete){toast('Confirm every resolution criterion before closing');return}resolutionState.stage='closed';addAudit('Coordinator confirmed resolution and closed exception');timeline.unshift([clock(),'Exception closed','Resolution criteria confirmed; outcome monitoring retained.']);renderTimeline();renderResolution();closeModal();toast('Exception closed · monitoring remains active');};
 };
 $('#reopen-case').onclick=()=>{resolutionState.stage='in-progress';resolutionState.verified=false;addAudit('Exception reopened after new information','system/event-correlation');timeline.unshift([clock(),'Exception reopened','New or contradictory information requires renewed monitoring.']);renderTimeline();renderResolution();toast('Exception reopened and returned to monitoring');};
-$('#view-decision-audit').onclick=()=>switchTab('audit');
 function overrideAi(){openModal(`<p class="eyebrow">Human override</p><h2>Correct the assessment or action</h2><p>Your correction will be preserved in the audit history and reviewed as a learning candidate after closure.</p><label>Actual cause<textarea style="width:100%;min-height:70px;margin-top:6px;border:1px solid #dce3e7;border-radius:8px;padding:10px">Terminal labor shortage</textarea></label><label style="display:block;margin-top:12px">Preferred action<textarea style="width:100%;min-height:70px;margin-top:6px;border:1px solid #dce3e7;border-radius:8px;padding:10px">Escalate to regional operations before committing cost</textarea></label><div class="modal-actions"><button class="ghost" onclick="document.querySelector('#modal-close').click()">Cancel</button><button class="primary" id="apply-override">Update recommendation</button></div>`) }
 $$('.override-ai').forEach(button=>button.onclick=e=>{e.stopPropagation();selectedAction=button.closest('.action-card').dataset.action;overrideAi()});
 document.addEventListener('click',e=>{if(e.target?.id==='apply-override'){audit.unshift([new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}),'Coordinator overrode AI assessment','user/sourav']);renderAudit();closeModal();toast('Override recorded · Recommendation refreshed')}});
@@ -273,9 +272,16 @@ renderExceptions();renderEvidence();renderTimeline();renderAudit();renderResolut
   ]}
  };
  const state=Object.fromEntries(Object.keys(scenarios).map(id=>[id,{stage:'decide',action:null,requested:null,history:[]}]));
+ const preloadedAudit={
+  'EXC-2457':[
+   {at:'08:05 PM',event:'Exception created from cold-chain telemetry alert',actor:'system/correlation'},
+   {at:'08:07 PM',event:'Assigned to Sourav for coordinator review',actor:'user/sourav'},
+   {at:'08:12 PM',event:'Cold-chain signal correlated across carrier and terminal feeds',actor:'model/cold-chain-v2'},
+   {at:'08:16 PM',event:'AI assessment updated: powered reefer slot recommended',actor:'model/cold-chain-v2'}
+  ]
+ };
  const statusText={decide:'Needs decision','awaiting-info':'Awaiting information',signoff:'Awaiting sign-off',monitoring:'Monitoring',ready:'Ready to close',closed:'Closed'};
  let activeId='EXC-2481', activeAction='expedite', activeView='inbox';
- const root=document.querySelector('.workspace'), view=document.querySelector('#product-view');
  const find=id=>exceptions.find(x=>x.id===id);
  const esc=escapeHtml;
  // User-created exceptions are lightweight records. Keep their details
@@ -332,7 +338,14 @@ renderExceptions();renderEvidence();renderTimeline();renderAudit();renderResolut
   document.querySelector('#evidence-list').innerHTML=[['EV','Operational event',d.what,'Verified'],['AI','AI assessment',d.cause,'AI inference'],['SL','Customer commitment',d.impact,'Verified'],['GT','Open information',d.gap,'Missing']].map(x=>`<div class="evidence-item"><div class="source-icon"><i class="hgi-stroke ${sourceIconClass(x[0])}" aria-hidden="true"></i></div><div><strong>${x[1]}</strong><p>${x[2]}</p></div><span class="source-state">${x[3]}</span></div>`).join('');
   document.querySelector('.status-strip strong').textContent=`AI assessment updated ${e.time||'just now'} ago`;
   document.querySelector('.status-strip p').textContent=d.what;
-  renderActions();renderLifecycle();renderQueue();
+  renderActions();renderLifecycle();renderCaseAudit();renderQueue();
+ }
+ function renderCaseAudit(){
+  const list=document.querySelector('#audit-list'); if(!list)return;
+  const history=caseState(activeId).history||[];
+  const seeded=activeId==='EXC-2481'?(audit||[]).map(([at,event,actor])=>({at,event,actor})):(preloadedAudit[activeId]||[]);
+  const entries=[...history,...seeded];
+  list.innerHTML=entries.length?entries.map(h=>`<div class="audit-item"><strong>${esc(h.at)}</strong><p>${esc(h.event)}</p><code>${esc(h.actor)}</code></div>`).join(''):'<div class="audit-item"><strong>—</strong><p>No decisions recorded for this exception yet.</p><code>system</code></div>';
  }
  function renderLifecycle(){
   const d=scenario(activeId), s=caseState(activeId), action=d.actions.find(a=>a.id===s.action), section=document.querySelector('.resolution-section');
@@ -348,7 +361,7 @@ renderExceptions();renderEvidence();renderTimeline();renderAudit();renderResolut
   if(s.stage==='ready'){detail.textContent='A verified checkpoint supports the selected recovery path.';checkpoint.textContent='Ready for closure review';checkpointDetail.textContent='Coordinator must confirm remaining outcome criteria.';note.className='resolution-evidence verified';note.innerHTML='<i class="hgi-stroke hgi-checkmark-circle-02"></i><span>Verified update received. Review closure criteria or wait for another signal.</span>';close.disabled=false;simulate.textContent='Simulate contradictory event';}
   if(s.stage==='closed'){detail.textContent='Resolution was confirmed; ongoing monitoring can reopen the case.';checkpoint.textContent='Continuous monitoring';checkpointDetail.textContent='Contradictory events reopen this exception.';note.className='resolution-evidence closed';note.innerHTML='<i class="hgi-stroke hgi-checkmark-circle-02"></i><span>Resolution criteria were confirmed. Decision and evidence history are retained.</span>';reopen.classList.remove('hidden');simulate.classList.add('hidden');}
  }
- function openCase(id){activeId=id;activeAction=scenario(activeId).actions[0]?.id||null;activeView='inbox';showView('inbox');document.body.classList.add('drawer-open');document.documentElement.classList.add('drawer-open');renderCase();}
+ function openCase(id){activeId=id;activeAction=scenario(activeId).actions[0]?.id||null;activeView='inbox';document.body.classList.add('drawer-open');document.documentElement.classList.add('drawer-open');renderCase();}
  function approve(id){const d=scenario(activeId), a=d.actions.find(x=>x.id===id), needs=a.cost>LIMIT;openModal(`<p class="eyebrow">${needs?'Approval threshold':'Action approval'}</p><h2>${esc(a.name)}</h2><p>${needs?`This action adds ${money(a.cost)}, above the ${money(LIMIT)} coordinator threshold.`:'This action is within the coordinator approval threshold.'}</p><div class="modal-summary"><strong>Dependencies and authority</strong><div class="check-list">${a.deps.map(([kind,text])=>`<span><i class="hgi-stroke ${kind==='gap'?'hgi-alert-circle':'hgi-checkmark-circle-02'}"></i>${kind==='gap'?'Open dependency: ':'Verified: '}${esc(text)}</span>`).join('')}<span><i class="hgi-stroke hgi-checkmark-circle-02"></i>Duplicate action check passed</span></div></div><label class="confirm-check"><input id="decision-ack" type="checkbox"> I understand the cost, dependencies and operational exposure.</label><div class="modal-actions"><button class="ghost" id="decision-cancel">Go back</button><button class="primary" id="decision-confirm">${needs?'Send for sign-off':'Confirm and monitor'}</button></div>`);document.querySelector('#decision-cancel').onclick=closeModal;document.querySelector('#decision-confirm').onclick=()=>{if(!document.querySelector('#decision-ack').checked){toast('Acknowledge the decision details first');return;}const s=caseState(activeId);s.action=id;s.stage=needs?'signoff':'monitoring';record(activeId,needs?`Submitted ${a.name} for manager sign-off`:`Approved ${a.name} within coordinator authority`);closeModal();renderCase();toast(needs?'Sent for simulated manager sign-off':'Action approved and now monitored');};}
  function override(id){const a=scenario(activeId).actions.find(x=>x.id===id);openModal(`<p class="eyebrow">Human override</p><h2>Correct the recommendation</h2><p>Record what the coordinator knows that the AI does not. This becomes a learning-review candidate; it does not change live systems.</p><label>Reason<textarea id="override-note" style="width:100%;min-height:82px;margin-top:6px;border:1px solid #dce3e7;border-radius:8px;padding:10px">Customer relationship or operational context changes the preferred response.</textarea></label><div class="modal-actions"><button class="ghost" id="override-cancel">Cancel</button><button class="primary" id="override-save">Record override</button></div>`);document.querySelector('#override-cancel').onclick=closeModal;document.querySelector('#override-save').onclick=()=>{const s=caseState(activeId);s.action=id;s.stage='decide';record(activeId,`Human override recorded for ${a.name}`);closeModal();renderCase();toast('Override recorded for Learning review');};}
  function requestInfo(){const d=scenario(activeId);openModal(`<p class="eyebrow">Missing information</p><h2>Request ${esc(d.gap)}</h2><p>This is a simulated request. The exception remains open and no action is approved while evidence is missing.</p><div class="modal-summary"><strong>Expected response</strong><p>Carrier, terminal, broker, or customer confirmation that can change the recommended recovery path.</p></div><div class="modal-actions"><button class="ghost" id="request-cancel">Cancel</button><button class="primary" id="request-send">Record request</button></div>`);document.querySelector('#request-cancel').onclick=closeModal;document.querySelector('#request-send').onclick=()=>{const s=caseState(activeId);s.stage='awaiting-info';s.requested=d.gap;record(activeId,`Information request recorded: ${d.gap}`);closeModal();renderCase();toast('Request recorded; case is awaiting information');};}
@@ -363,12 +376,24 @@ renderExceptions();renderEvidence();renderTimeline();renderAudit();renderResolut
   if(name==='audit'){const events=cases.flatMap(x=>x.s.history.map(h=>({...h,id:x.id})));view.innerHTML=head('Reports','Human, AI, and system events retained for accountability in this local prototype.')+`<div class="history-table"><div class="history-row head"><span>When</span><span>Exception</span><span>Event</span><span>Actor</span></div>${events.map(h=>`<div class="history-row"><span>${h.at}</span><span>${h.id}</span><span>${esc(h.event)}</span><span>${esc(h.actor)}</span></div>`).join('')||'<div class="history-row"><span>—</span><span>—</span><span>Activity will appear when a decision is made.</span><span>—</span></div>'}</div>`;}
   view.querySelector('[data-back]').onclick=()=>showView('inbox');view.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openCase(b.dataset.open));
  }
- function showView(name){activeView=name;root.classList.toggle('hidden',name!=='inbox');view.classList.toggle('hidden',name==='inbox');document.querySelector('#page-title').textContent=name==='inbox'?'Exception inbox':({monitoring:'Live monitoring',decisions:'Decision history',learning:'Learning review',audit:'Reports'})[name];document.querySelectorAll('.nav-item,.top-tab').forEach(b=>b.classList.toggle('active',b.dataset.view===name));if(name!=='inbox')renderProductView(name);}
- document.querySelectorAll('button.nav-item,button.top-tab').forEach(b=>b.onclick=()=>showView(b.dataset.view));
+ function showView(name,updateUrl=true){
+  activeView=name;
+  const main=document.querySelector('main');
+  const isProductView=name!=='inbox';
+  const routes={inbox:'',monitoring:'#monitoring',decisions:'#decision-history',learning:'#learning-review',audit:'#reports'};
+  if(updateUrl&&window.location.hash!==routes[name]) history.replaceState({view:name},'',routes[name]||window.location.pathname+window.location.search);
+  main.classList.toggle('product-mode',isProductView);
+  root.classList.toggle('hidden',isProductView);
+  view.classList.toggle('hidden',!isProductView);
+  document.querySelector('#page-title').textContent=name==='inbox'?'Exception inbox':({monitoring:'Live monitoring',decisions:'Decision history',learning:'Learning review',audit:'Reports'})[name];
+  document.querySelectorAll('.nav-item,.top-tab').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
+  if(isProductView){renderProductView(name);window.scrollTo({top:0,behavior:'smooth'});}
+ }
  document.querySelector('#request-info').onclick=requestInfo;document.querySelector('#simulate-update').onclick=simulate;document.querySelector('#review-closure').onclick=closeCase;document.querySelector('#reopen-case').onclick=()=>{const s=caseState(activeId);s.stage='monitoring';record(activeId,'Exception reopened after new information','system/event-correlation');renderCase();toast('Exception reopened and returned to monitoring');};
  document.querySelector('#explain-ai').onclick=()=>{const d=scenario(activeId);openModal(`<p class="eyebrow">Reasoning trace</p><h2>Why this exception is prioritized</h2><p>The assessment joins operational events, service commitments, and historical context. It separates verified events from AI inference and open data.</p><div class="modal-summary"><strong>Current support</strong><p>${d.sources} verified sources support this assessment. Confidence is ${d.confidence}; it is not a guarantee.</p><p><b>Open information:</b> ${esc(d.gap)}</p></div><div class="modal-actions"><button class="primary" id="explain-done">Done</button></div>`);document.querySelector('#explain-done').onclick=closeModal;};
- document.querySelector('#view-decision-audit').onclick=()=>showView('decisions');
+ document.querySelector('#view-decision-audit').onclick=()=>{renderCaseAudit();switchTab('audit');};
  renderQueue();renderCase();
+ if(window.location.hash==='#decision-history') history.replaceState(null,'',window.location.pathname+window.location.search);
 })();
 
 /* Add depth only while content is moving behind the sticky drawer header. */
