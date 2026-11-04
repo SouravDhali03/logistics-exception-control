@@ -1457,12 +1457,19 @@ h3,.type-h3{font-size:var(--type-h3-size)!important;line-height:var(--type-h3-li
 .exception-row.active .case-status{background:#fff!important}
 .badge.uncertainty{border-radius:9999px!important}
 
-/* Fine-tune the queue rhythm: tighter data columns, clearer action affordance. */
+/* Keep the action track inside the painted row surface at every queue width. */
 @media(min-width:821px){
   .exception-table-head,.exception-row{column-gap:12px!important}
   .exception-table-head > span:nth-child(6),
   .exception-row > .uncertainty-cell{padding-left:16px!important}
-  .row-action{margin-left:24px!important;margin-right:2px!important}
+  .exception-table{min-width:1209px!important}
+  .row-action{margin-inline:0!important}
+}
+@media(max-width:1100px) and (min-width:821px){
+  .exception-table{min-width:1138px!important}
+}
+@media(max-width:820px){
+  .exception-table{min-width:1086px!important}
 }
 
 /* Provenance markers use a true circular container at every drawer size. */
