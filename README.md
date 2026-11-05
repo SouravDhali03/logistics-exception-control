@@ -177,13 +177,13 @@ The interface is designed as a calm operational workspace rather than an alarm-h
 ## Project structure
 
 ```text
-react-app/
+app/
   src/                       React application and UI components
   public/                    Logo, map, favicon, and supporting assets
   package.json               Build and development scripts
 
 .github/workflows/
-  deploy-pages.yml           GitHub Pages deployment from react-app/dist/
+  deploy-pages.yml           GitHub Pages deployment from app/dist/
 
 .openai/
   hosting.json               OpenAI Sites hosting configuration
@@ -194,10 +194,10 @@ README.md                    Product, implementation, and repository overview
 
 ## Run locally
 
-From the React app directory:
+From the application directory:
 
 ```bash
-cd react-app
+cd app
 npm ci
 npm run dev
 ```
@@ -206,7 +206,7 @@ Then open the local URL printed by Vite.
 
 ## Deployment
 
-The public prototype is built from `react-app/` and deployed by GitHub Actions whenever a commit reaches `main`:
+The public prototype is built from `app/` and deployed by GitHub Actions whenever a commit reaches `main`:
 
 - **Live site:** [souravdhali03.github.io/logistics-exception-control](https://souravdhali03.github.io/logistics-exception-control/)
 - **Repository:** [github.com/SouravDhali03/logistics-exception-control](https://github.com/SouravDhali03/logistics-exception-control)
@@ -235,7 +235,7 @@ A production implementation would require:
 | --- | --- |
 | Repository | [SouravDhali03/logistics-exception-control](https://github.com/SouravDhali03/logistics-exception-control) |
 | Public demo | [GitHub Pages](https://souravdhali03.github.io/logistics-exception-control/) |
-| Source | [`react-app/`](./react-app) |
+| Source | [`app/`](./app) |
 | Design case study | [`DESIGN.md`](./DESIGN.md) |
 | Hosting workflow | [`.github/workflows/deploy-pages.yml`](./.github/workflows/deploy-pages.yml) |
 | License | No license file is currently included. |

@@ -34,20 +34,20 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: react-app/package-lock.json
+          cache-dependency-path: app/package-lock.json
 
       - name: Install dependencies
-        working-directory: react-app
+        working-directory: app
         run: npm ci
 
       - name: Build React app
-        working-directory: react-app
+        working-directory: app
         run: npm run build
 
       - name: Upload static site
         uses: actions/upload-pages-artifact@v4
         with:
-          path: ./react-app/dist
+          path: ./app/dist
 
       - name: Deploy to GitHub Pages
         id: deployment
