@@ -204,6 +204,7 @@ type ScenarioDetail = {
   actions: ScenarioAction[];
   audit: Array<[string, string, string]>;
 };
+type AuditEntry = [string, string, string];
 
 const initialCases: ExceptionCase[] = [
   {
@@ -646,6 +647,34 @@ const fallbackScenario = (item: ExceptionCase): ScenarioDetail => ({
   audit: [],
 });
 
+const auditIconForLabel = (label: string): IconSvgElement => {
+  const normalizedLabel = label.toLowerCase();
+
+  if (normalizedLabel.includes("created")) return FileTextIcon;
+  if (normalizedLabel.includes("assessment")) return SparklesIcon;
+  if (
+    normalizedLabel.includes("signal") ||
+    normalizedLabel.includes("validation") ||
+    normalizedLabel.includes("verified")
+  ) {
+    return ShieldCheckIcon;
+  }
+  if (normalizedLabel.includes("override")) return AlertCircleIcon;
+  if (
+    normalizedLabel.includes("approved") ||
+    normalizedLabel.includes("assigned") ||
+    normalizedLabel.includes("acknowledged")
+  ) {
+    return CheckmarkCircle04Icon;
+  }
+  if (normalizedLabel.includes("sign-off")) return ShieldCheckIcon;
+  if (normalizedLabel.includes("closed")) return Tick02Icon;
+  if (normalizedLabel.includes("reopened")) return Navigation03Icon;
+  if (normalizedLabel.includes("monitoring")) return Activity01Icon;
+
+  return Activity01Icon;
+};
+
 const priorityVariant: Record<Priority, "destructive" | "warning" | "outline"> =
   { P1: "destructive", P2: "warning", P3: "outline" };
 const priorityLabel: Record<Priority, string> = {
@@ -1011,6 +1040,7 @@ function App() {
   const [copiedExceptionId, setCopiedExceptionId] = useState<string | null>(
     null,
   );
+  const [liveAudit, setLiveAudit] = useState<Record<string, AuditEntry[]>>({});
   useEffect(() => {
     const handleHashChange = () => {
       setActiveSection(getSectionFromHash());
@@ -1026,6 +1056,10 @@ function App() {
   const selected = cases.find((item) => item.id === selectedId) ?? cases[1];
   const [selectedFrom, selectedTo] = selected.route.split(" → ");
   const detail = scenarioDetails[selected.id] ?? fallbackScenario(selected);
+  const auditEntries: AuditEntry[] = [
+    ...(liveAudit[selected.id] ?? []).slice().reverse(),
+    ...detail.audit,
+  ];
   const verifiedSourceCount = Number.parseInt(detail.sources, 10) || 0;
   const approvedAction = detail.actions.find(
     (action) => action.id === approvedActionId,
@@ -1047,6 +1081,8 @@ function App() {
     });
   };
   const startResolution = (actionId: string, requiresSignoff = false) => {
+    const actionName =
+      detail.actions.find((action) => action.id === actionId)?.name ?? actionId;
     setIsResolving(true);
     window.setTimeout(() => {
       setApprovedActionId(actionId);
@@ -1058,6 +1094,12 @@ function App() {
             ? { ...item, status: nextStage, approvedActionId: actionId, activityAt: Date.now() }
             : item,
         ),
+      );
+      recordAudit(
+        selected.id,
+        requiresSignoff
+          ? `Requested manager sign-off for ${actionName}`
+          : `Approved ${actionName} and started monitoring`,
       );
       setIsResolving(false);
     }, 650);
@@ -1072,6 +1114,7 @@ function App() {
             : item,
         ),
       );
+      recordAudit(selected.id, "Manager sign-off recorded; monitoring started");
     }
   };
   const receiveVerifiedUpdate = () => {
@@ -1095,6 +1138,10 @@ function App() {
         risk: false,
         alerts: false,
       });
+      recordAudit(
+        selected.id,
+        "Recorded a verified update after reopening monitoring",
+      );
       return;
     }
     setResolutionStage("ready");
@@ -1105,6 +1152,7 @@ function App() {
           : item,
       ),
     );
+    recordAudit(selected.id, "Recorded verified update; closure review is ready");
   };
   const reopenResolution = () => {
     setResolutionStage("in-progress");
@@ -1121,6 +1169,7 @@ function App() {
       risk: false,
       alerts: false,
     });
+    recordAudit(selected.id, "Reopened monitoring for reassessment");
   };
   const confirmClosure = () => {
     if (Object.values(closureCriteria).every(Boolean)) {
@@ -1133,6 +1182,7 @@ function App() {
         ),
       );
       setClosureOpen(false);
+      recordAudit(selected.id, "Closed exception after closure criteria were confirmed");
     }
   };
   const copySelectedId = async () => {
@@ -1145,11 +1195,23 @@ function App() {
     }
   };
   const assignSelectedCase = (owner: string) => {
+    if (selected.owner === owner) return;
     setCases((currentCases) =>
       currentCases.map((item) =>
         item.id === selected.id ? { ...item, owner } : item,
       ),
     );
+    recordAudit(selected.id, `Assigned exception to ${owner}`);
+  };
+  const recordAudit = (caseId: string, label: string, actor = "user/sourav") => {
+    const time = new Intl.DateTimeFormat("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date());
+    setLiveAudit((current) => ({
+      ...current,
+      [caseId]: [...(current[caseId] ?? []), [time, label, actor]],
+    }));
   };
   const visibleCases = useMemo(
     () =>
@@ -1986,6 +2048,7 @@ function App() {
                                   variant="link"
                                   size="sm"
                                   className="h-auto p-0"
+                                  onClick={() => setActiveTab("evidence")}
                                 >
                                   View evidence
                                   <HugeiconsIcon
@@ -2420,7 +2483,12 @@ function App() {
                                                     Cancel
                                                   </AlertDialogCancel>
                                                   <AlertDialogAction
-                                                    onClick={() => undefined}
+                                                    onClick={() =>
+                                                      recordAudit(
+                                                        selected.id,
+                                                        `Overrode AI recommendation: ${overrideReason.trim() || "No reason provided"}`,
+                                                      )
+                                                    }
                                                   >
                                                     Record override
                                                   </AlertDialogAction>
@@ -2908,23 +2976,10 @@ function App() {
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-3">
-                            {detail.audit.length > 0 ? (
+                            {auditEntries.length > 0 ? (
                               <div className="divide-y overflow-hidden rounded-xl border bg-background">
-                                {detail.audit.map(([time, label, actor]) => {
-                                  const normalizedLabel = label.toLowerCase();
-                                  const auditIcon = normalizedLabel.includes(
-                                    "created"
-                                  )
-                                    ? FileTextIcon
-                                    : normalizedLabel.includes("assessment")
-                                      ? SparklesIcon
-                                      : normalizedLabel.includes("signal") ||
-                                          normalizedLabel.includes("validation")
-                                        ? ShieldCheckIcon
-                                        : normalizedLabel.includes("assigned") ||
-                                            normalizedLabel.includes("acknowledged")
-                                          ? CheckmarkCircle04Icon
-                                          : Activity01Icon;
+                                {auditEntries.map(([time, label, actor]) => {
+                                  const auditIcon = auditIconForLabel(label);
 
                                   return (
                                     <div
