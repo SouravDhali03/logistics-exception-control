@@ -167,25 +167,23 @@ The interface is designed as a calm operational workspace rather than an alarm-h
 
 ## Technology
 
-- Semantic HTML
-- CSS with responsive layouts and design tokens
-- Vanilla JavaScript
-- [Hugeicons](https://hugeicons.com/) icon font
-- Browser `localStorage` for locally created exceptions
+- React and TypeScript
+- Vite with Tailwind CSS and shadcn-style UI primitives
+- [Hugeicons](https://hugeicons.com/) icons
+- Responsive layouts and design tokens
 - Static GitHub Pages deployment
-- No framework, build step, server runtime, or production dependency
+- Browser-local prototype state
 
 ## Project structure
 
 ```text
-dist/
-  index.html                 Application structure and accessible markup
-  styles.css                 Design system, responsive layout, and UI states
-  app.js                     Demo data, scenarios, interactions, and local state
-  assets/                    Logo, avatar, and supporting visual assets
+react-app/
+  src/                       React application and UI components
+  public/                    Logo, map, favicon, and supporting assets
+  package.json               Build and development scripts
 
 .github/workflows/
-  deploy-pages.yml           GitHub Pages deployment from dist/
+  deploy-pages.yml           GitHub Pages deployment from react-app/dist/
 
 .openai/
   hosting.json               OpenAI Sites hosting configuration
@@ -196,17 +194,19 @@ README.md                    Product, implementation, and repository overview
 
 ## Run locally
 
-From the repository root:
+From the React app directory:
 
 ```bash
-python3 -m http.server 4173 --directory dist
+cd react-app
+npm ci
+npm run dev
 ```
 
-Then open [http://127.0.0.1:4173](http://127.0.0.1:4173).
+Then open the local URL printed by Vite.
 
 ## Deployment
 
-The public prototype is deployed from `dist/` by GitHub Actions whenever a commit reaches `main`:
+The public prototype is built from `react-app/` and deployed by GitHub Actions whenever a commit reaches `main`:
 
 - **Live site:** [souravdhali03.github.io/logistics-exception-control](https://souravdhali03.github.io/logistics-exception-control/)
 - **Repository:** [github.com/SouravDhali03/logistics-exception-control](https://github.com/SouravDhali03/logistics-exception-control)
@@ -235,7 +235,7 @@ A production implementation would require:
 | --- | --- |
 | Repository | [SouravDhali03/logistics-exception-control](https://github.com/SouravDhali03/logistics-exception-control) |
 | Public demo | [GitHub Pages](https://souravdhali03.github.io/logistics-exception-control/) |
-| Source | [`dist/`](./dist) |
+| Source | [`react-app/`](./react-app) |
 | Design case study | [`DESIGN.md`](./DESIGN.md) |
 | Hosting workflow | [`.github/workflows/deploy-pages.yml`](./.github/workflows/deploy-pages.yml) |
 | License | No license file is currently included. |

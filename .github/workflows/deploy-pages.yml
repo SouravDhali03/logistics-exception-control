@@ -29,10 +29,25 @@ jobs:
         with:
           enablement: true
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: react-app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: react-app
+        run: npm ci
+
+      - name: Build React app
+        working-directory: react-app
+        run: npm run build
+
       - name: Upload static site
         uses: actions/upload-pages-artifact@v4
         with:
-          path: ./dist
+          path: ./react-app/dist
 
       - name: Deploy to GitHub Pages
         id: deployment
