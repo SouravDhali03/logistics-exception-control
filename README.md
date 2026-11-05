@@ -165,44 +165,39 @@ The interface is designed as a calm operational workspace rather than an alarm-h
 7. Review all closure criteria after verified evidence arrives.
 8. Close the exception, or reopen/reassess it when contradictory evidence appears.
 
-## Technology
-
-- React and TypeScript
-- Vite with Tailwind CSS and shadcn-style UI primitives
-- [Hugeicons](https://hugeicons.com/) icons
-- Responsive layouts and design tokens
-- Static GitHub Pages deployment
-- Browser-local prototype state
-
-## Project structure
-
-```text
-app/
-  src/                       React application and UI components
-  public/                    Logo, map, favicon, and supporting assets
-  package.json               Build and development scripts
-
-.github/workflows/
-  deploy-pages.yml           GitHub Pages deployment from app/dist/
-
-.openai/
-  hosting.json               OpenAI Sites hosting configuration
-
-DESIGN.md                    Detailed product-design case study
-README.md                    Product, implementation, and repository overview
-```
-
 ## Run locally
 
-From the application directory:
+### Prerequisites
+
+- Node.js 24 or later
+- npm
+
+### Install dependencies
 
 ```bash
 cd app
 npm ci
+```
+
+### Start the development server
+
+```bash
 npm run dev
 ```
 
-Then open the local URL printed by Vite.
+Vite will print the local URL in the terminal, usually `http://localhost:5173`.
+
+### Create a production build
+
+```bash
+npm run build
+```
+
+### Preview the production build
+
+```bash
+npm run preview
+```
 
 ## Deployment
 
