@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import {
   Activity01Icon,
@@ -74,6 +75,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import {
   Collapsible,
@@ -675,8 +683,8 @@ const auditIconForLabel = (label: string): IconSvgElement => {
   return Activity01Icon;
 };
 
-const priorityVariant: Record<Priority, "destructive" | "warning" | "outline"> =
-  { P1: "destructive", P2: "warning", P3: "outline" };
+const priorityVariant: Record<Priority, "destructive" | "secondary" | "outline"> =
+  { P1: "destructive", P2: "secondary", P3: "outline" };
 const priorityLabel: Record<Priority, string> = {
   P1: "Critical",
   P2: "High",
@@ -733,6 +741,32 @@ const ShieldCheck = (props: HugeIconProps) => (
 const Sparkles = (props: HugeIconProps) => (
   <HugeiconsIcon icon={SparklesIcon} strokeWidth={2} {...props} />
 );
+
+type InlineEmptyStateProps = {
+  icon: ReactNode;
+  title: ReactNode;
+  description: ReactNode;
+};
+
+function InlineEmptyState({
+  icon,
+  title,
+  description,
+}: InlineEmptyStateProps) {
+  return (
+    <Empty className="items-start gap-4 rounded-xl bg-muted/30 p-4 text-left md:p-4">
+      <EmptyHeader className="max-w-none flex-row items-start gap-4 text-left">
+        <EmptyMedia className="size-8 rounded-full border bg-background text-muted-foreground shadow-sm [&>svg:not([class*='size-'])]:size-4">
+          {icon}
+        </EmptyMedia>
+        <div className="space-y-1">
+          <EmptyTitle>{title}</EmptyTitle>
+          <EmptyDescription>{description}</EmptyDescription>
+        </div>
+      </EmptyHeader>
+    </Empty>
+  );
+}
 
 const routeModeLabel: Record<RouteMode, string> = {
   air: "Air freight",
@@ -923,7 +957,7 @@ function RouteMapDialog({
                 <button
                   type="button"
                   aria-label={`Show destination location ${selectedTo}`}
-                  className="absolute size-5 -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-full border-[3px] border-fuchsia-300 bg-background shadow-[0_0_0_5px_color-mix(in_oklab,var(--primary)_14%,transparent)] outline-none transition-transform hover:scale-110 focus-visible:ring-3 focus-visible:ring-ring/40"
+                  className="absolute size-5 -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-full border-[3px] border-primary bg-background shadow-[0_0_0_5px_color-mix(in_oklab,var(--primary)_14%,transparent)] outline-none transition-transform hover:scale-110 focus-visible:ring-3 focus-visible:ring-ring/40"
                   style={{ left: projectedToPoint.left, top: projectedToPoint.top }}
                 />
               </TooltipTrigger>
@@ -933,14 +967,14 @@ function RouteMapDialog({
               </TooltipContent>
             </Tooltip>
             <div className="absolute left-7 top-7 flex items-center gap-2 rounded-full border bg-background/90 px-3 py-1.5 text-xs font-medium shadow-sm backdrop-blur">
-              <span className="size-2 animate-pulse rounded-full bg-emerald-500" />
+              <span className="size-2 animate-pulse rounded-full bg-primary" />
               Live · updated 2m ago
             </div>
           </div>
           <div className="space-y-5 border-t p-6 lg:border-t-0 lg:border-l">
             <div>
               <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Shipment status</p>
-              <div className="mt-2 flex items-center gap-2"><span className="size-2 rounded-full bg-emerald-500" /><span className="font-medium">In transit</span></div>
+              <div className="mt-2 flex items-center gap-2"><span className="size-2 rounded-full bg-primary" /><span className="font-medium">In transit</span></div>
             </div>
             <Separator />
             <div className="flex items-center gap-3">
@@ -1056,6 +1090,7 @@ function App() {
   const selected = cases.find((item) => item.id === selectedId) ?? cases[1];
   const [selectedFrom, selectedTo] = selected.route.split(" → ");
   const detail = scenarioDetails[selected.id] ?? fallbackScenario(selected);
+  const hasResponseOptions = detail.actions.length > 0;
   const auditEntries: AuditEntry[] = [
     ...(liveAudit[selected.id] ?? []).slice().reverse(),
     ...detail.audit,
@@ -1442,9 +1477,11 @@ function App() {
                           onOpenChange={setStatusFilterOpen}
                         >
                           <CollapsibleTrigger asChild>
-                            <button
+                            <Button
                               type="button"
-                              className="flex w-full items-center justify-between rounded-2xl px-3 py-3 text-sm font-semibold tracking-tight outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                              variant="ghost"
+                              size="sm"
+                              className="h-auto w-full justify-between rounded-2xl px-3 py-3 text-sm font-semibold tracking-tight"
                             >
                               <span>Status</span>
                               <HugeiconsIcon
@@ -1452,7 +1489,7 @@ function App() {
                                 className={`size-4 text-muted-foreground transition-transform ${statusFilterOpen ? "rotate-90" : ""}`}
                                 strokeWidth={2}
                               />
-                            </button>
+                            </Button>
                           </CollapsibleTrigger>
                           <CollapsibleContent className="pt-1">
                             <DropdownMenuRadioGroup
@@ -1480,9 +1517,11 @@ function App() {
                           onOpenChange={setPriorityFilterOpen}
                         >
                           <CollapsibleTrigger asChild>
-                            <button
+                            <Button
                               type="button"
-                              className="flex w-full items-center justify-between rounded-2xl px-3 py-3 text-sm font-semibold tracking-tight outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                              variant="ghost"
+                              size="sm"
+                              className="h-auto w-full justify-between rounded-2xl px-3 py-3 text-sm font-semibold tracking-tight"
                             >
                               <span>Priority</span>
                               <HugeiconsIcon
@@ -1490,7 +1529,7 @@ function App() {
                                 className={`size-4 text-muted-foreground transition-transform ${priorityFilterOpen ? "rotate-90" : ""}`}
                                 strokeWidth={2}
                               />
-                            </button>
+                            </Button>
                           </CollapsibleTrigger>
                           <CollapsibleContent className="pt-1">
                             <DropdownMenuRadioGroup
@@ -2069,7 +2108,7 @@ function App() {
                             <CardTitle className="text-lg">
                               Choose how to protect the delivery
                               {resolutionStage !== "awaiting" && (
-                                <span className="text-emerald-700 dark:text-emerald-400">
+                                <span className="text-primary">
                                   {" "}· approved
                                 </span>
                               )}
@@ -2105,7 +2144,7 @@ function App() {
                               <div className="overflow-hidden rounded-xl border bg-card shadow-none">
                                 <div className="flex items-start justify-between gap-6 p-4">
                                   <div className="min-w-0">
-                                      <Badge variant="success">
+                                      <Badge variant="default">
                                         Decision recorded
                                       </Badge>
                                       <h3 className="mt-3 text-xl font-semibold tracking-tight sm:text-2xl">
@@ -2156,22 +2195,11 @@ function App() {
                                 </div>
                               </div>
                             ) : detail.actions.length === 0 ? (
-                              <div className="flex items-start gap-3 rounded-xl border border-dashed bg-muted/30 p-4">
-                                <div className="rounded-full bg-background p-2 text-muted-foreground shadow-sm">
-                                  <FileText className="size-4" />
-                                </div>
-                                <div className="space-y-1">
-                                  <p className="text-sm font-medium">
-                                    No response is available yet
-                                  </p>
-                                  <p className="text-sm text-muted-foreground">
-                                    We need more verified evidence before a
-                                    recovery path can be recommended. Check
-                                    Evidence for the missing signal or keep
-                                    monitoring this exception.
-                                  </p>
-                                </div>
-                              </div>
+                              <InlineEmptyState
+                                icon={<FileText className="size-4" />}
+                                title="No response is available yet"
+                                description="We need more verified evidence before a recovery path can be recommended. Check Evidence for the missing signal or keep monitoring this exception."
+                              />
                             ) : (
                             <Accordion
                               type="single"
@@ -2228,7 +2256,7 @@ function App() {
                                           <Badge
                                             variant={
                                               index === 0
-                                                ? "warning"
+                                                ? "secondary"
                                                 : "outline"
                                             }
                                           >
@@ -2299,7 +2327,7 @@ function App() {
                                         </div>
                                         <div
                                           role="status"
-                                          className="mt-4 flex items-center justify-between gap-3 rounded-lg border border-warning/40 bg-warning/10 p-3 text-xs text-warning-foreground"
+                                          className="mt-4 flex items-center justify-between gap-3 rounded-lg border border-border bg-muted p-3 text-xs text-muted-foreground"
                                         >
                                           <div className="flex items-center gap-2">
                                             <AlertCircle className="size-4 shrink-0" />
@@ -2340,7 +2368,7 @@ function App() {
                                                     key={`${kind}-${text}`}
                                                     variant={
                                                       kind === "gap"
-                                                        ? "warning"
+                                                        ? "secondary"
                                                         : "outline"
                                                     }
                                                   >
@@ -2610,21 +2638,23 @@ function App() {
                         <Card
                           className={
                             resolutionStage === "awaiting"
-                              ? "gap-0 py-4"
+                              ? "gap-0 rounded-xl border bg-card py-0 shadow-none ring-0"
                               : "motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 motion-safe:duration-500 motion-safe:ease-out motion-reduce:animate-none"
                           }
                         >
                           <CardHeader
                             className={
                               resolutionStage === "awaiting"
-                                ? "gap-0 px-4"
+                                ? "gap-0 px-4 py-4"
                                 : "gap-0"
                             }
                           >
                             <div className="flex items-center justify-between gap-4">
                               <div>
                                 <CardDescription>
-                                  03 / Resolution progress
+                                  {resolutionStage === "awaiting"
+                                    ? "03 / Resolution not started"
+                                    : "03 / Resolution progress"}
                                 </CardDescription>
                                 {resolutionStage !== "awaiting" && (
                                   <CardTitle className="text-lg">
@@ -2637,16 +2667,18 @@ function App() {
                                   resolutionStage === "awaiting"
                                     ? "outline"
                                     : resolutionStage === "awaiting-signoff"
-                                      ? "warning"
+                                      ? "secondary"
                                       : resolutionStage === "ready"
-                                        ? "success"
+                                        ? "default"
                                         : resolutionStage === "closed"
                                           ? "secondary"
                                           : "default"
                                 }
                               >
                                 {resolutionStage === "awaiting"
-                                  ? "Needs decision"
+                                  ? hasResponseOptions
+                                    ? "Needs decision"
+                                    : "Needs evidence"
                                   : resolutionStage === "awaiting-signoff"
                                     ? "Awaiting sign-off"
                                     : resolutionStage === "in-progress"
@@ -2657,6 +2689,20 @@ function App() {
                               </Badge>
                             </div>
                           </CardHeader>
+                          {resolutionStage === "awaiting" && (
+                            <CardContent className="flex items-center justify-start gap-2 border-t bg-muted/30 px-4 py-4 text-sm text-muted-foreground">
+                              <HugeiconsIcon
+                                icon={InformationCircleIcon}
+                                strokeWidth={2}
+                                className="size-4 shrink-0"
+                              />
+                              <span>
+                                {hasResponseOptions
+                                  ? "Select a response above to start resolution"
+                                  : "Waiting for verified evidence before a recovery response can be recommended"}
+                              </span>
+                            </CardContent>
+                          )}
                           {resolutionStage !== "awaiting" && (
                             <CardContent className="space-y-4">
                               <>
@@ -2825,20 +2871,11 @@ function App() {
                           </CardHeader>
                           <CardContent className="space-y-3">
                             {verifiedSourceCount === 0 ? (
-                              <div className="flex items-start gap-3 rounded-xl border border-dashed bg-muted/30 p-4">
-                                <div className="rounded-full bg-background p-2 text-muted-foreground shadow-sm">
-                                  <ShieldCheck className="size-4" />
-                                </div>
-                                <div className="space-y-1">
-                                  <p className="text-sm font-medium">
-                                    No verified evidence available
-                                  </p>
-                                  <p className="text-sm text-muted-foreground">
-                                    Evidence will appear here when operational
-                                    signals or partner confirmations are received.
-                                  </p>
-                                </div>
-                              </div>
+                              <InlineEmptyState
+                                icon={<ShieldCheck className="size-4" />}
+                                title="No verified evidence available"
+                                description="Evidence will appear here when operational signals or partner confirmations are received."
+                              />
                             ) : (
                               <div className="divide-y overflow-hidden rounded-xl border bg-background">
                                 {[
@@ -3010,25 +3047,18 @@ function App() {
                                 })}
                               </div>
                             ) : (
-                              <div className="flex items-start gap-4 rounded-xl border border-dashed bg-muted/30 p-4">
-                                <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border bg-background shadow-sm">
+                              <InlineEmptyState
+                                icon={
                                   <HugeiconsIcon
                                     icon={Activity01Icon}
-                                    className="size-5 text-muted-foreground"
+                                    className="size-4"
                                     strokeWidth={2}
                                     aria-hidden="true"
                                   />
-                                </div>
-                                <div className="space-y-1">
-                                  <p className="font-medium">
-                                    No decisions recorded yet
-                                  </p>
-                                  <p className="text-sm text-muted-foreground">
-                                    Decision and action history will appear here
-                                    after a response is recorded.
-                                  </p>
-                                </div>
-                              </div>
+                                }
+                                title="No audit records yet"
+                                description="Decision and action history will appear here after the first action is recorded."
+                              />
                             )}
                           </CardContent>
                         </Card>
