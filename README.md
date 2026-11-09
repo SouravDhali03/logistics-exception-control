@@ -41,9 +41,9 @@ Common pain points include:
 
 ## Current prototype
 
-The queue contains ten realistic exception examples spanning port disruption, temperature excursion, incomplete customs documents, stale tracking, delayed warehouse handoff, driver-hours compliance, customs release, missing proof of delivery, carrier-capacity loss, and offline temperature telemetry.
+The queue contains eleven realistic exception examples spanning port disruption, temperature excursion, incomplete customs documents, stale tracking, delayed warehouse handoff, driver-hours compliance, customs release, missing proof of delivery, carrier-capacity loss, and offline temperature telemetry.
 
-Six decision-rich cases have scenario-specific assessments and recovery choices. Each can move through decision, information request, sign-off, monitoring, closure-readiness, and closed states.
+Seven decision-rich cases have scenario-specific assessments and recovery choices. Each can move through decision, information request, sign-off, monitoring, closure-readiness, and closed states.
 
 ### 1. Prioritized exception inbox
 

@@ -1,13 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
-import type { ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import {
   Activity01Icon,
-  Airplane01Icon,
   AlertCircleIcon,
-  ArrowRight01Icon,
   BellIcon,
-  Cancel01Icon,
   ChevronLeftIcon,
   ChevronRightIcon,
   CheckmarkCircle04Icon,
@@ -20,17 +16,15 @@ import {
   InboxIcon,
   Navigation03Icon,
   MoreHorizontalIcon,
-  PackageSearchIcon,
   Search01Icon,
   ShieldCheckIcon,
-  ShipIcon,
   SparklesIcon,
   Analytics01Icon,
   Settings05Icon,
   Tick02Icon,
-  TruckIcon,
   UnfoldMoreIcon,
 } from "@hugeicons/core-free-icons";
+
 import {
   Accordion,
   AccordionContent,
@@ -67,21 +61,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { InlineEmptyState } from "@/components/inline-empty-state";
+import { MetricStrip } from "@/components/metric-strip";
+import { AssessmentReasoningDialog } from "@/components/assessment-reasoning-dialog";
+import { Insight } from "@/components/insight";
+import { ComingSoonPage } from "@/components/coming-soon-page";
+import { LocationField } from "@/components/location-field";
+import { RouteMapDialog } from "@/components/route-map-dialog";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
+  resolveRouteData,
+  routeModeIcon,
+  type RouteMapData,
+} from "@/components/route-map-data";
 import { Input } from "@/components/ui/input";
 import {
   Collapsible,
@@ -97,14 +88,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { ResponsiveDataTable, type ResponsiveTableColumn } from "@/components/responsive-data-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -120,24 +104,56 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
-const worldMapUrl = `${import.meta.env.BASE_URL}world-map.svg`;
 
 type Priority = "P1" | "P2" | "P3";
-type RouteMode = "air" | "ocean" | "road";
+type ImpactSummary = {
+  headline: string;
+  detail?: string;
+};
+type ConfidenceSummary = {
+  level: "confirmed" | "likely" | "possible" | "unknown";
+  score?: number;
+};
 type ExceptionCase = {
   id: string;
   priority: Priority;
   title: string;
-  route: string;
+  route: RouteMapData;
   detail: string;
-  impact: string;
+  impact: ImpactSummary;
   time: string;
   owner: string;
-  uncertainty: string;
+  confidence: ConfidenceSummary;
   status?: ResolutionStage;
   approvedActionId?: string;
   activityAt?: number;
   snoozedUntil?: number;
+};
+
+type ExceptionCaseInput = Omit<ExceptionCase, "route"> & { route: string };
+
+type RouteDisplay = {
+  from: string;
+  to: string;
+  data: RouteMapData;
+};
+
+const confidenceText = ({ level, score }: ConfidenceSummary) => {
+  const label = level[0].toUpperCase() + level.slice(1);
+  return score === undefined ? label : `${label} · ${score}%`;
+};
+
+const routeDisplayFor = (item: Pick<ExceptionCase, "route">): RouteDisplay => ({
+  from: item.route.from.country,
+  to: item.route.to.country,
+  data: item.route,
+});
+
+const normalizeExceptionCase = (item: ExceptionCaseInput): ExceptionCase => {
+  return {
+    ...item,
+    route: resolveRouteData(item.id, item.route),
+  };
 };
 type ResolutionStage =
   | "awaiting"
@@ -214,17 +230,17 @@ type ScenarioDetail = {
 };
 type AuditEntry = [string, string, string];
 
-const initialCases: ExceptionCase[] = [
+const initialCaseInputs: ExceptionCaseInput[] = [
   {
     id: "EXC-2457",
     priority: "P2",
     title: "Reefer power interruption detected",
     route: "Kobe → Rotterdam",
     detail: "Cold-chain telemetry dropped for 18 min",
-    impact: "Product integrity at risk · $28k load",
+    impact: { headline: "Product integrity at risk", detail: "$28k load" },
     time: "18m",
     owner: "You",
-    uncertainty: "Possible · 72%",
+    confidence: { level: "possible", score: 72 },
   },
   {
     id: "EXC-2481",
@@ -232,10 +248,10 @@ const initialCases: ExceptionCase[] = [
     title: "Port congestion threatens delivery",
     route: "Rotterdam → Chicago",
     detail: "31h predicted delay · $42k at risk",
-    impact: "Late by 25–37h · $42k at risk",
+    impact: { headline: "Late by 25–37h", detail: "$42k at risk" },
     time: "2m",
     owner: "You",
-    uncertainty: "Likely · 82%",
+    confidence: { level: "likely", score: 82 },
   },
   {
     id: "EXC-2479",
@@ -243,10 +259,10 @@ const initialCases: ExceptionCase[] = [
     title: "Temperature excursion detected",
     route: "Singapore → Frankfurt",
     detail: "8.4°C for 22 min · Pharma",
-    impact: "Quality release at risk · Pharma load",
+    impact: { headline: "Quality release at risk", detail: "Pharma load" },
     time: "11m",
     owner: "Mina",
-    uncertainty: "Confirmed",
+    confidence: { level: "confirmed" },
   },
   {
     id: "EXC-2476",
@@ -254,10 +270,10 @@ const initialCases: ExceptionCase[] = [
     title: "Customs documents incomplete",
     route: "Dhaka → Toronto",
     detail: "Commercial invoice mismatch",
-    impact: "Late by 5–6 days",
+    impact: { headline: "Late by 5–6 days" },
     time: "26m",
     owner: "You",
-    uncertainty: "Possible · 64%",
+    confidence: { level: "possible", score: 64 },
   },
   {
     id: "EXC-2471",
@@ -265,10 +281,10 @@ const initialCases: ExceptionCase[] = [
     title: "Tracking signal stale",
     route: "Shenzhen → Long Beach",
     detail: "No carrier event for 9h",
-    impact: "Up to 15h late",
+    impact: { headline: "Up to 15h late" },
     time: "1h",
     owner: "Unassigned",
-    uncertainty: "Unknown",
+    confidence: { level: "unknown" },
   },
   {
     id: "EXC-2468",
@@ -276,10 +292,10 @@ const initialCases: ExceptionCase[] = [
     title: "Warehouse handoff delayed",
     route: "Hamburg → Prague",
     detail: "Pickup missed by 46 min",
-    impact: "Up to 8h late · $4k penalty",
+    impact: { headline: "Up to 8h late", detail: "$4k penalty" },
     time: "2h",
     owner: "Nadia",
-    uncertainty: "Likely · 71%",
+    confidence: { level: "likely", score: 71 },
   },
   {
     id: "EXC-2464",
@@ -287,10 +303,10 @@ const initialCases: ExceptionCase[] = [
     title: "Delivery appointment at risk",
     route: "Antwerp → Lyon",
     detail: "Driver hours limit approaching",
-    impact: "At risk · 2h of slack left",
+    impact: { headline: "At risk", detail: "2h of slack left" },
     time: "3h",
     owner: "You",
-    uncertainty: "Possible · 58%",
+    confidence: { level: "possible", score: 58 },
   },
   {
     id: "EXC-2461",
@@ -298,10 +314,10 @@ const initialCases: ExceptionCase[] = [
     title: "Container release delayed",
     route: "Busan → Seattle",
     detail: "Customs release pending for 6h",
-    impact: "Up to 8h late",
+    impact: { headline: "Up to 8h late" },
     time: "4h",
     owner: "Mina",
-    uncertainty: "Possible · 61%",
+    confidence: { level: "possible", score: 61 },
   },
   {
     id: "EXC-2459",
@@ -309,10 +325,10 @@ const initialCases: ExceptionCase[] = [
     title: "Proof of delivery missing",
     route: "Paris → Madrid",
     detail: "Signed receipt not uploaded",
-    impact: "Proof required before release",
+    impact: { headline: "Proof required before release" },
     time: "5h",
     owner: "Unassigned",
-    uncertainty: "Unknown",
+    confidence: { level: "unknown" },
   },
   {
     id: "EXC-2458",
@@ -320,10 +336,10 @@ const initialCases: ExceptionCase[] = [
     title: "Carrier capacity reduced",
     route: "Los Angeles → Dallas",
     detail: "Two booked trailers cancelled",
-    impact: "Up to 8h late · $4k penalty",
+    impact: { headline: "Up to 8h late", detail: "$4k penalty" },
     time: "6h",
     owner: "You",
-    uncertainty: "Likely · 74%",
+    confidence: { level: "likely", score: 74 },
   },
   {
     id: "EXC-2456",
@@ -331,14 +347,19 @@ const initialCases: ExceptionCase[] = [
     title: "Temperature logger offline",
     route: "Osaka → Vancouver",
     detail: "No telemetry received for 3h",
-    impact: "No reliable ETA",
+    impact: { headline: "No reliable ETA" },
     time: "7h",
     owner: "Nadia",
-    uncertainty: "Possible · 55%",
+    confidence: { level: "possible", score: 55 },
   },
 ];
 
+const initialCases: ExceptionCase[] = initialCaseInputs.map(normalizeExceptionCase);
+
 const assignmentOptions = ["You", "Mina", "Nadia", "Unassigned"] as const;
+
+const impactText = (impact: ImpactSummary) =>
+  [impact.headline, impact.detail].filter(Boolean).join(" · ");
 
 const scenarioDetails: Record<string, ScenarioDetail> = {
   "EXC-2457": {
@@ -645,11 +666,11 @@ const scenarioDetails: Record<string, ScenarioDetail> = {
 const fallbackScenario = (item: ExceptionCase): ScenarioDetail => ({
   what: item.detail || "A shipment signal requires coordinator review.",
   cause: "The cause has not been assessed yet.",
-  impact: item.detail || "Operational impact is not yet estimated.",
+  impact: impactText(item.impact) || "Operational impact is not yet estimated.",
   gap: "Supporting evidence and partner confirmation.",
-  confidence: item.uncertainty.includes("%")
-    ? (item.uncertainty.match(/\d+%/)?.[0] ?? "Unverified")
-    : "Unverified",
+  confidence: item.confidence.score === undefined
+    ? "Unverified"
+    : `${item.confidence.score}%`,
   sources: "0",
   actions: [],
   audit: [],
@@ -698,24 +719,6 @@ const statusLabel: Record<ResolutionStage, string> = {
   ready: "Ready for closure",
   closed: "Resolved",
 };
-const routeModeById: Record<string, RouteMode> = {
-  "EXC-2481": "ocean",
-  "EXC-2457": "ocean",
-  "EXC-2479": "air",
-  "EXC-2476": "air",
-  "EXC-2471": "ocean",
-  "EXC-2468": "road",
-  "EXC-2464": "road",
-  "EXC-2461": "ocean",
-  "EXC-2459": "road",
-  "EXC-2458": "road",
-  "EXC-2456": "air",
-};
-const routeModeIcon: Record<RouteMode, IconSvgElement> = {
-  air: Airplane01Icon,
-  ocean: ShipIcon,
-  road: TruckIcon,
-};
 type HugeIconProps = Omit<React.ComponentProps<typeof HugeiconsIcon>, "icon">;
 const Activity = (props: HugeIconProps) => (
   <HugeiconsIcon icon={Activity01Icon} strokeWidth={2} {...props} />
@@ -742,290 +745,6 @@ const Sparkles = (props: HugeIconProps) => (
   <HugeiconsIcon icon={SparklesIcon} strokeWidth={2} {...props} />
 );
 
-type InlineEmptyStateProps = {
-  icon: ReactNode;
-  title: ReactNode;
-  description: ReactNode;
-};
-
-function InlineEmptyState({
-  icon,
-  title,
-  description,
-}: InlineEmptyStateProps) {
-  return (
-    <Empty className="items-start gap-4 rounded-xl bg-muted/30 p-4 text-left md:p-4">
-      <EmptyHeader className="max-w-none flex-row items-start gap-4 text-left">
-        <EmptyMedia className="size-8 rounded-full border bg-background text-muted-foreground shadow-sm [&>svg:not([class*='size-'])]:size-4">
-          {icon}
-        </EmptyMedia>
-        <div className="space-y-1">
-          <EmptyTitle>{title}</EmptyTitle>
-          <EmptyDescription>{description}</EmptyDescription>
-        </div>
-      </EmptyHeader>
-    </Empty>
-  );
-}
-
-const routeModeLabel: Record<RouteMode, string> = {
-  air: "Air freight",
-  ocean: "Ocean vessel",
-  road: "Road freight",
-};
-
-const routePointByCity: Record<string, { left: string; top: string }> = {
-  Vancouver: { left: "10.5%", top: "32%" },
-  Seattle: { left: "11.5%", top: "37%" },
-  "Long Beach": { left: "10.5%", top: "47%" },
-  "Los Angeles": { left: "11%", top: "48%" },
-  Dallas: { left: "15%", top: "55%" },
-  Chicago: { left: "17.5%", top: "39%" },
-  Toronto: { left: "20.5%", top: "37%" },
-  Rotterdam: { left: "54%", top: "31%" },
-  Hamburg: { left: "55%", top: "34%" },
-  Antwerp: { left: "53.5%", top: "35%" },
-  Paris: { left: "52%", top: "40%" },
-  Madrid: { left: "50%", top: "49%" },
-  Lyon: { left: "53%", top: "44%" },
-  Frankfurt: { left: "55%", top: "38%" },
-  Prague: { left: "57%", top: "39%" },
-  Kobe: { left: "83%", top: "41%" },
-  Osaka: { left: "82%", top: "38%" },
-  Busan: { left: "80%", top: "43%" },
-  Shenzhen: { left: "76%", top: "52%" },
-  Singapore: { left: "72%", top: "68%" },
-  Dhaka: { left: "70%", top: "50%" },
-};
-
-const portPointByCity: Record<string, { left: string; top: string }> = {
-  Vancouver: { left: "8.5%", top: "35%" },
-  Seattle: { left: "10%", top: "40%" },
-  "Long Beach": { left: "8.5%", top: "50%" },
-  "Los Angeles": { left: "9%", top: "51%" },
-  Chicago: { left: "20%", top: "37%" },
-  Toronto: { left: "22%", top: "35%" },
-  Rotterdam: { left: "52.5%", top: "33%" },
-  Hamburg: { left: "54.5%", top: "32%" },
-  Antwerp: { left: "52%", top: "35%" },
-  Kobe: { left: "84%", top: "42%" },
-  Osaka: { left: "83%", top: "40%" },
-  Busan: { left: "81%", top: "44%" },
-  Shenzhen: { left: "77%", top: "54%" },
-  Singapore: { left: "72%", top: "70%" },
-  Dhaka: { left: "72%", top: "52%" },
-};
-
-function RouteMapDialog({
-  selected,
-  selectedFrom,
-  selectedTo,
-}: {
-  selected: ExceptionCase;
-  selectedFrom: string;
-  selectedTo: string;
-}) {
-  const mode = routeModeById[selected.id] ?? "road";
-  const pointMap = mode === "ocean" ? portPointByCity : routePointByCity;
-  const fromPoint = pointMap[selectedFrom] ?? { left: "50%", top: "50%" };
-  const toPoint = pointMap[selectedTo] ?? { left: "50%", top: "50%" };
-  const fromPercentPoint = {
-    left: Number.parseFloat(fromPoint.left),
-    top: Number.parseFloat(fromPoint.top),
-  };
-  const toPercentPoint = {
-    left: Number.parseFloat(toPoint.left),
-    top: Number.parseFloat(toPoint.top),
-  };
-  const mapScale = mode === "road" ? 3.2 : 1;
-  const mapFocus = mode === "road"
-    ? {
-        left: (fromPercentPoint.left + toPercentPoint.left) / 2,
-        top: (fromPercentPoint.top + toPercentPoint.top) / 2,
-      }
-    : { left: 50, top: 50 };
-  const projectMapPoint = (point: { left: string; top: string }) => ({
-    left: `${mapFocus.left + (Number.parseFloat(point.left) - mapFocus.left) * mapScale}%`,
-    top: `${mapFocus.top + (Number.parseFloat(point.top) - mapFocus.top) * mapScale}%`,
-  });
-  const projectedFromPoint = projectMapPoint(fromPoint);
-  const projectedToPoint = projectMapPoint(toPoint);
-  const fromCoordinates = {
-    x: Number.parseFloat(fromPoint.left) * 7.2,
-    y: Number.parseFloat(fromPoint.top) * 3.6,
-  };
-  const toCoordinates = {
-    x: Number.parseFloat(toPoint.left) * 7.2,
-    y: Number.parseFloat(toPoint.top) * 3.6,
-  };
-  const currentProgress = 0.52;
-  const currentPoint = {
-    x: fromCoordinates.x + (toCoordinates.x - fromCoordinates.x) * currentProgress,
-    y: fromCoordinates.y + (toCoordinates.y - fromCoordinates.y) * currentProgress,
-  };
-  const trackerScale = mode === "road" ? 0.7 : 1;
-  const trackerRadius = (6 * trackerScale) / mapScale;
-
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <button
-          type="button"
-          className="group inline-flex h-6 cursor-pointer items-center gap-1 leading-6 outline-none focus-visible:rounded-md focus-visible:ring-3 focus-visible:ring-ring/30"
-          aria-label={`Open live route map from ${selectedFrom} to ${selectedTo}`}
-        >
-          <span className="inline-flex size-5 shrink-0 items-center justify-center">
-            <HugeiconsIcon
-              icon={Navigation03Icon}
-              className="size-4 text-primary transition-colors group-hover:text-primary/80"
-              strokeWidth={2.5}
-              aria-hidden="true"
-            />
-          </span>
-          <span className="text-base font-semibold text-primary transition-colors group-hover:text-primary/80">Route</span>
-          <span className="ml-1 text-foreground">{selectedFrom}</span>
-          <HugeiconsIcon
-            icon={ArrowRight01Icon}
-            className="size-4 shrink-0 text-muted-foreground"
-            strokeWidth={2}
-            aria-hidden="true"
-          />
-          <span className="text-foreground">{selectedTo}</span>
-        </button>
-      </DialogTrigger>
-      <DialogContent className="max-w-5xl">
-        <div className="flex items-start justify-between gap-4 border-b px-6 py-5">
-          <div className="space-y-1">
-            <DialogTitle>Live route tracking</DialogTitle>
-            <DialogDescription>
-              {selected.id} · {selectedFrom} to {selectedTo}
-            </DialogDescription>
-          </div>
-          <DialogClose asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              className="-mr-2 -mt-1 rounded-full"
-              aria-label="Close route map"
-            >
-              <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
-            </Button>
-          </DialogClose>
-        </div>
-        <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_18rem]">
-          <div className="relative min-h-[22rem] overflow-hidden bg-background p-4 sm:p-6">
-            <svg
-              viewBox="0 0 720 360"
-              className="relative h-full min-h-[19rem] w-full transition-transform duration-300"
-              style={{ transform: `scale(${mapScale})`, transformOrigin: `${mapFocus.left}% ${mapFocus.top}%` }}
-              role="img"
-              aria-label={`Live route from ${selectedFrom} to ${selectedTo}`}
-            >
-              <rect width="720" height="360" className="fill-background" />
-              <image
-                href={worldMapUrl}
-                x="0"
-                y="0"
-                width="720"
-                height="360"
-                preserveAspectRatio="none"
-                opacity="0.96"
-              />
-              <circle cx={currentPoint.x} cy={currentPoint.y} r={(18 * trackerScale) / mapScale} className="fill-primary/20 stroke-primary" strokeWidth={(2 * trackerScale) / mapScale} />
-              <circle cx={currentPoint.x} cy={currentPoint.y} r={trackerRadius} className="fill-primary">
-                <animate attributeName="r" values={`${trackerRadius};${trackerRadius * 1.75};${trackerRadius}`} dur="2s" repeatCount="indefinite" />
-                <animate attributeName="opacity" values="1;0.35;1" dur="2s" repeatCount="indefinite" />
-              </circle>
-            </svg>
-            <Tooltip open>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  aria-label={`Show origin location ${selectedFrom}`}
-                  className="absolute size-5 -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-full border-[3px] border-primary bg-background shadow-[0_0_0_5px_color-mix(in_oklab,var(--primary)_18%,transparent)] outline-none transition-transform hover:scale-110 focus-visible:ring-3 focus-visible:ring-ring/40"
-                  style={{ left: projectedFromPoint.left, top: projectedFromPoint.top }}
-                />
-              </TooltipTrigger>
-              <TooltipContent side={mode === "road" ? "left" : "top"} className="space-y-0.5">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">From</p>
-                <p className="font-medium">{selectedFrom}</p>
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip open>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  aria-label={`Show destination location ${selectedTo}`}
-                  className="absolute size-5 -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-full border-[3px] border-primary bg-background shadow-[0_0_0_5px_color-mix(in_oklab,var(--primary)_14%,transparent)] outline-none transition-transform hover:scale-110 focus-visible:ring-3 focus-visible:ring-ring/40"
-                  style={{ left: projectedToPoint.left, top: projectedToPoint.top }}
-                />
-              </TooltipTrigger>
-              <TooltipContent side={mode === "road" ? "right" : "top"} className="space-y-0.5">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">To</p>
-                <p className="font-medium">{selectedTo}</p>
-              </TooltipContent>
-            </Tooltip>
-            <div className="absolute left-7 top-7 flex items-center gap-2 rounded-full border bg-background/90 px-3 py-1.5 text-xs font-medium shadow-sm backdrop-blur">
-              <span className="size-2 animate-pulse rounded-full bg-primary" />
-              Live · updated 2m ago
-            </div>
-          </div>
-          <div className="space-y-5 border-t p-6 lg:border-t-0 lg:border-l">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Shipment status</p>
-              <div className="mt-2 flex items-center gap-2"><span className="size-2 rounded-full bg-primary" /><span className="font-medium">In transit</span></div>
-            </div>
-            <Separator />
-            <div className="flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-muted"><HugeiconsIcon icon={routeModeIcon[mode]} className="size-5" strokeWidth={2} /></div>
-              <div><p className="text-sm font-medium">{routeModeLabel[mode]}</p><p className="text-xs text-muted-foreground">{selected.id} shipment</p></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div><p className="text-muted-foreground">Current location</p><p className="mt-1 font-medium">Mid-route</p></div>
-              <div><p className="text-muted-foreground">ETA</p><p className="mt-1 whitespace-nowrap font-medium">Tomorrow · 08:40</p></div>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Route progress</p>
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full w-[52%] rounded-full bg-primary" /></div>
-              <div className="mt-1 flex justify-between text-xs text-muted-foreground"><span>{selectedFrom}</span><span>52%</span><span>{selectedTo}</span></div>
-            </div>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function ComingSoonPage({
-  section,
-}: {
-  section: Exclude<WorkspaceSection, "inbox">;
-}) {
-  const meta = workspaceSectionMeta[section];
-
-  return (
-    <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center">
-      <div className="w-full max-w-lg text-center">
-        <div className="flex flex-col items-center px-6 py-16">
-          <Badge variant="outline" className="mt-6">
-            Coming soon
-          </Badge>
-          <h1 className="mt-4 text-2xl font-semibold tracking-tight">
-            {meta.title}
-          </h1>
-          <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
-            {meta.description} will be available here as this workspace grows.
-          </p>
-          <Button asChild variant="outline" className="mt-6">
-            <a href="#inbox">Back to Exception inbox</a>
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function App() {
   const getSectionFromHash = (): WorkspaceSection => {
     const section = window.location.hash.replace("#", "") as WorkspaceSection;
@@ -1034,6 +753,28 @@ function App() {
   const [activeSection, setActiveSection] = useState<WorkspaceSection>(
     getSectionFromHash,
   );
+  const getSidebarViewport = () =>
+    window.innerWidth < 768
+      ? "mobile"
+      : window.innerWidth < 1536
+        ? "compact"
+        : "wide";
+  const [sidebarOpen, setSidebarOpen] = useState(
+    () => getSidebarViewport() !== "compact",
+  );
+  const sidebarViewportRef = useRef(getSidebarViewport());
+  useEffect(() => {
+    const handleSidebarViewportChange = () => {
+      const nextViewport = getSidebarViewport();
+      if (nextViewport === sidebarViewportRef.current) return;
+
+      sidebarViewportRef.current = nextViewport;
+      setSidebarOpen(nextViewport !== "compact");
+    };
+
+    window.addEventListener("resize", handleSidebarViewportChange);
+    return () => window.removeEventListener("resize", handleSidebarViewportChange);
+  }, []);
   const [cases, setCases] = useState<ExceptionCase[]>(initialCases);
   const [selectedId, setSelectedId] = useState("EXC-2481");
   const [priorityFilter, setPriorityFilter] = useState<Priority | "all">("all");
@@ -1087,8 +828,10 @@ function App() {
     window.addEventListener("hashchange", handleHashChange);
     return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
-  const selected = cases.find((item) => item.id === selectedId) ?? cases[1];
-  const [selectedFrom, selectedTo] = selected.route.split(" → ");
+  const selected =
+    cases.find((item) => item.id === selectedId) ?? cases[0] ?? initialCases[0];
+  const selectedRoute = routeDisplayFor(selected);
+  const selectedRouteData = selectedRoute.data;
   const detail = scenarioDetails[selected.id] ?? fallbackScenario(selected);
   const hasResponseOptions = detail.actions.length > 0;
   const auditEntries: AuditEntry[] = [
@@ -1259,8 +1002,8 @@ function App() {
               item.id,
               item.title,
               item.detail,
-              item.route,
-              item.impact,
+              `${routeDisplayFor(item).from} ${routeDisplayFor(item).to}`,
+              impactText(item.impact),
               item.owner,
             ].some((value) => value.toLowerCase().includes(query));
           return (
@@ -1299,7 +1042,10 @@ function App() {
       "Dubai",
       "London",
       "New York",
-      ...cases.flatMap((item) => item.route.split(" → ")),
+      ...cases.flatMap((item) => {
+        const route = routeDisplayFor(item);
+        return [route.from, route.to];
+      }),
     ]),
   );
   const locationQuery = locationField === "from" ? newFrom : newTo;
@@ -1337,12 +1083,12 @@ function App() {
       id,
       priority: newPriority,
       title,
-      route: `${from} → ${to}`,
+      route: resolveRouteData(id, `${from} → ${to}`),
       detail: newImpact.trim() || "Impact assessment pending",
-      impact: newImpact.trim() || "Impact assessment pending",
+      impact: { headline: newImpact.trim() || "Impact assessment pending" },
       time: "now",
       owner: "Unassigned",
-      uncertainty: "Unknown",
+      confidence: { level: "unknown" },
       status: "awaiting",
       activityAt: Date.now(),
     };
@@ -1356,10 +1102,106 @@ function App() {
   const rangeStart =
     visibleCases.length === 0 ? 0 : (activePage - 1) * pageSize + 1;
   const rangeEnd = Math.min(activePage * pageSize, visibleCases.length);
+  const openCaseDetails = (item: ExceptionCase, tab?: string) => {
+    setSelectedId(item.id);
+    setDrawerOpen(true);
+    resetResolution(item.status ?? "awaiting", item.approvedActionId ?? null);
+    if (tab) setActiveTab(tab);
+  };
+  const inboxColumns: ResponsiveTableColumn<ExceptionCase>[] = [
+    {
+      id: "id",
+      header: "ID",
+      render: (item) => <span className="font-mono text-xs text-muted-foreground">{item.id}</span>,
+    },
+    {
+      id: "priority",
+      header: "Priority",
+      render: (item) => <Badge variant={priorityVariant[item.priority]}>{item.priority} · {priorityLabel[item.priority]}</Badge>,
+    },
+    {
+      id: "exception",
+      header: "Exception",
+      cellClassName: "min-w-56",
+      render: (item) => (
+        <div>
+          <p className="font-medium">{item.title}</p>
+          <p className="text-xs text-muted-foreground">
+            {item.snoozedUntil && item.snoozedUntil > Date.now()
+              ? "Snoozed until tomorrow"
+              : statusLabel[item.status ?? "awaiting"]}
+          </p>
+        </div>
+      ),
+    },
+    {
+      id: "route",
+      header: "Route",
+      cellClassName: "min-w-44",
+      render: (item) => {
+        const route = routeDisplayFor(item);
+        return (
+          <div className="flex items-center gap-3">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-full border bg-muted text-muted-foreground">
+              <HugeiconsIcon icon={routeModeIcon[route.data.mode]} className="size-5" strokeWidth={2} />
+            </div>
+            <div className="space-y-0.5 text-xs">
+              <p><span className="mr-1 text-muted-foreground">From</span><span className="font-medium">{route.from}</span></p>
+              <p><span className="mr-1 text-muted-foreground">To</span><span className="font-medium">{route.to}</span></p>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      id: "impact",
+      header: "Impact",
+      cellClassName: "min-w-44 text-sm",
+      render: (item) => (
+        <div>
+          <p className="font-medium">{item.impact.headline}</p>
+          {item.impact.detail && <p className="text-xs text-muted-foreground">{item.impact.detail}</p>}
+        </div>
+      ),
+    },
+    {
+      id: "confidence",
+      header: "Confidence",
+      headClassName: "hidden xl:table-cell",
+      cellClassName: "hidden xl:table-cell",
+      render: (item) => <Badge variant="outline">{confidenceText(item.confidence)}</Badge>,
+    },
+    {
+      id: "owner",
+      header: "Owner",
+      headClassName: "hidden 2xl:table-cell",
+      cellClassName: "hidden 2xl:table-cell",
+      render: (item) => item.owner,
+    },
+    {
+      id: "actions",
+      header: "",
+      headClassName: "w-12",
+      hideOnMobile: true,
+      render: (item) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label={`Actions for ${item.id}`}>
+              <MoreHorizontal className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onSelect={() => openCaseDetails(item)}>Show details</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => openCaseDetails(item, "audit")}>View history</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
 
   return (
     <TooltipProvider>
-      <SidebarProvider className="overflow-x-hidden">
+      <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen} className="overflow-x-hidden">
         <AppSidebar />
         <SidebarInset className="min-w-0">
           <div className="min-h-screen bg-muted/30 text-foreground">
@@ -1558,138 +1400,20 @@ function App() {
                     </DropdownMenu>
                   </div>
                 </div>
-                <div className="overflow-hidden rounded-xl border bg-background">
-                  <div className="w-full overflow-x-auto">
-                    <Table>
-                      <TableHeader className="bg-muted/40">
-                        <TableRow className="hover:bg-transparent">
-                          <TableHead>ID</TableHead>
-                          <TableHead>Priority</TableHead>
-                          <TableHead>Exception</TableHead>
-                          <TableHead>Route</TableHead>
-                          <TableHead>Impact</TableHead>
-                          <TableHead>Confidence</TableHead>
-                          <TableHead>Owner</TableHead>
-                          <TableHead className="w-12" />
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {paginatedCases.map((item) => {
-                          const [from, to] = item.route.split(" → ");
-                          return (
-                            <TableRow
-                              key={item.id}
-                              data-state={
-                                item.id === selectedId ? "selected" : undefined
-                              }
-                            >
-                              <TableCell className="font-mono text-xs text-muted-foreground">
-                                {item.id}
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant={priorityVariant[item.priority]}>
-                                  {item.priority} ·{" "}
-                                  {priorityLabel[item.priority]}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <div className="min-w-56">
-                                  <p className="font-medium">{item.title}</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {item.snoozedUntil &&
-                                    item.snoozedUntil > Date.now()
-                                      ? "Snoozed until tomorrow"
-                                      : statusLabel[item.status ?? "awaiting"]}
-                                  </p>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex min-w-44 items-center gap-3">
-                                  <div className="flex size-8 shrink-0 items-center justify-center rounded-full border bg-muted text-muted-foreground">
-                                    <HugeiconsIcon
-                                      icon={
-                                        routeModeIcon[
-                                          routeModeById[item.id] ?? "road"
-                                        ]
-                                      }
-                                      className="size-5"
-                                      strokeWidth={2}
-                                    />
-                                  </div>
-                                  <div className="space-y-0.5 text-xs">
-                                    <p>
-                                      <span className="mr-1 text-muted-foreground">
-                                        From
-                                      </span>
-                                      <span className="font-medium">
-                                        {from}
-                                      </span>
-                                    </p>
-                                    <p>
-                                      <span className="mr-1 text-muted-foreground">
-                                        To
-                                      </span>
-                                      <span className="font-medium">{to}</span>
-                                    </p>
-                                  </div>
-                                </div>
-                              </TableCell>
-                              <TableCell className="min-w-44 text-sm">
-                                {item.impact}
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant="outline">
-                                  {item.uncertainty}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>{item.owner}</TableCell>
-                              <TableCell>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      aria-label={`Actions for ${item.id}`}
-                                    >
-                                      <MoreHorizontal className="size-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem
-                                      onSelect={() => {
-                                        setSelectedId(item.id);
-                                        setDrawerOpen(true);
-                                        resetResolution(
-                                          item.status ?? "awaiting",
-                                          item.approvedActionId ?? null,
-                                        );
-                                      }}
-                                    >
-                                      Show details
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onSelect={() => {
-                                        setSelectedId(item.id);
-                                        setDrawerOpen(true);
-                                        resetResolution(
-                                          item.status ?? "awaiting",
-                                          item.approvedActionId ?? null,
-                                        );
-                                        setActiveTab("audit");
-                                      }}
-                                    >
-                                      View history
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
-                  </div>
-                  <div className="flex items-center justify-between gap-4 border-t px-4 py-3 text-sm text-muted-foreground">
+                <ResponsiveDataTable
+                  rows={paginatedCases}
+                  columns={inboxColumns}
+                  getRowId={(item) => item.id}
+                  getRowProps={(item) => ({
+                    "data-state": item.id === selectedId ? "selected" : undefined,
+                  })}
+                  renderMobileActions={(item) => (
+                    <Button variant="outline" className="w-full" onClick={() => openCaseDetails(item)}>
+                      View exception details
+                    </Button>
+                  )}
+                />
+                  <div className="mt-4 flex items-center justify-between gap-4 px-4 py-3 text-sm text-muted-foreground sm:mt-0">
                     <p>
                       Showing {rangeStart}–{rangeEnd} of {visibleCases.length}
                     </p>
@@ -1732,10 +1456,12 @@ function App() {
                     </div>
                   </div>
                 </div>
-              </div>
                 </>
               ) : (
-                <ComingSoonPage section={activeSection} />
+                <ComingSoonPage
+                  title={workspaceSectionMeta[activeSection].title}
+                  description={workspaceSectionMeta[activeSection].description}
+                />
               )}
             </main>
             <AlertDialog
@@ -1861,60 +1587,28 @@ function App() {
               </AlertDialogContent>
             </AlertDialog>
             <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
-              <SheetContent className="flex w-full flex-col gap-0 p-0 sm:max-w-2xl">
+              <SheetContent className="flex w-full! max-w-[100vw] min-w-0 flex-col gap-0 p-0 sm:max-w-2xl">
                 <Tabs
                   value={activeTab}
                   onValueChange={setActiveTab}
                   className="flex min-h-0 flex-1 flex-col"
                 >
                   <SheetHeader className="gap-0 border-b border-border/70 p-0">
-                    <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-5">
-                      <div className="min-w-0 pr-10">
-                        <div className="mb-3 flex flex-wrap gap-2">
+                    <div className="flex min-w-0 items-start justify-between gap-4 px-4 pt-4 pb-4 sm:px-6 sm:pt-6 sm:pb-5">
+                      <div className="min-w-0 pr-9 sm:pr-10">
+                        <div className="mb-3 flex flex-wrap gap-1.5 sm:gap-2">
                           <Badge variant={priorityVariant[selected.priority]}>
                             {selected.priority} ·{" "}
                             {priorityLabel[selected.priority]}
                           </Badge>
                           <Badge variant="outline">
-                            {selected.uncertainty}
+                            {confidenceText(selected.confidence)}
                           </Badge>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button
-                                type="button"
-                                className="inline-flex h-5 w-fit shrink-0 items-center justify-center rounded-3xl bg-secondary px-2 text-xs font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
-                                aria-label={`Assign exception, currently assigned to ${selected.owner}`}
-                              >
-                                Assigned to {selected.owner}
-                                <HugeiconsIcon
-                                  icon={UnfoldMoreIcon}
-                                  className="ml-1 size-3.5 text-muted-foreground"
-                                  strokeWidth={2}
-                                />
-                              </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" className="w-52">
-                              <DropdownMenuLabel>Assign to</DropdownMenuLabel>
-                              <DropdownMenuRadioGroup
-                                value={selected.owner}
-                                onValueChange={assignSelectedCase}
-                              >
-                                {assignmentOptions.map((owner) => (
-                                  <DropdownMenuRadioItem
-                                    key={owner}
-                                    value={owner}
-                                  >
-                                    {owner === "You" ? "You (me)" : owner}
-                                  </DropdownMenuRadioItem>
-                                ))}
-                              </DropdownMenuRadioGroup>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
                         </div>
-                        <SheetTitle className="text-2xl font-semibold tracking-tight">
+                        <SheetTitle className="break-words text-xl font-semibold leading-tight tracking-tight sm:text-2xl">
                           {selected.title}
                         </SheetTitle>
-                        <div className="mt-1 flex items-center gap-2 text-base leading-6 text-muted-foreground">
+                        <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-5 text-muted-foreground sm:text-base sm:leading-6">
                           <span className="inline-flex items-center gap-1">
                             <SheetDescription className="mt-0 text-base leading-normal text-inherit">
                               {selected.id}
@@ -1953,25 +1647,65 @@ function App() {
                           </span>
                           <span aria-hidden="true">·</span>
                           <RouteMapDialog
-                            selected={selected}
-                            selectedFrom={selectedFrom}
-                            selectedTo={selectedTo}
+                            selectedId={selected.id}
+                            routeData={selectedRouteData}
                           />
+                        </div>
+                        <div className="mt-3 flex items-center gap-3">
+                          <span className="text-sm text-muted-foreground">
+                            Assigned to
+                          </span>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="secondary"
+                                size="xs"
+                                className="rounded-3xl"
+                                aria-label={`Assign exception, currently assigned to ${selected.owner}`}
+                              >
+                                {selected.owner}
+                                <HugeiconsIcon
+                                  icon={UnfoldMoreIcon}
+                                  className="ml-1 size-3.5 text-muted-foreground"
+                                  strokeWidth={2}
+                                />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="w-52">
+                              <DropdownMenuLabel>Assign to</DropdownMenuLabel>
+                              <DropdownMenuRadioGroup
+                                value={selected.owner}
+                                onValueChange={assignSelectedCase}
+                              >
+                                {assignmentOptions.map((owner) => (
+                                  <DropdownMenuRadioItem
+                                    key={owner}
+                                    value={owner}
+                                  >
+                                    {owner === "You" ? "You (me)" : owner}
+                                  </DropdownMenuRadioItem>
+                                ))}
+                              </DropdownMenuRadioGroup>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
                     </div>
                     <TabsList
                       variant="line"
-                      className="flex h-12 w-full justify-start gap-0 rounded-none border-b-0 bg-transparent px-3 py-0 text-sm"
+                      className="flex h-12 w-full justify-start gap-0 overflow-x-auto rounded-none border-b-0 bg-transparent px-1 py-0 text-sm sm:px-3"
                     >
                       <TabsTrigger
                         value="decision"
+                        className="shrink-0"
                         onClick={() => setActiveTab("decision")}
                       >
                         Decision
                       </TabsTrigger>
                       <TabsTrigger
                         value="evidence"
+                        className="shrink-0"
                         onClick={() => setActiveTab("evidence")}
                       >
                         Evidence{" "}
@@ -1981,12 +1715,14 @@ function App() {
                       </TabsTrigger>
                       <TabsTrigger
                         value="timeline"
+                        className="shrink-0"
                         onClick={() => setActiveTab("timeline")}
                       >
                         Timeline
                       </TabsTrigger>
                       <TabsTrigger
                         value="audit"
+                        className="shrink-0"
                         onClick={() => setActiveTab("audit")}
                       >
                         Audit
@@ -1994,12 +1730,12 @@ function App() {
                     </TabsList>
                   </SheetHeader>
                   <ScrollArea className="flex-1">
-                    <div className="space-y-6 p-6">
-                      <div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-4">
+                    <div className="space-y-6 p-4 sm:p-6">
+                      <div className="flex min-w-0 items-start gap-3 rounded-lg border bg-muted/30 p-4">
                         <div className="rounded-md bg-primary p-2 text-primary-foreground">
                           <Sparkles className="size-4" />
                         </div>
-                        <div className="flex-1">
+                        <div className="min-w-0 flex-1">
                           <p className="text-sm font-medium">
                             AI assessment updated {selected.time} ago
                           </p>
@@ -2012,8 +1748,8 @@ function App() {
                       <TabsContent value="decision" className="space-y-6 pt-6">
                         <Card>
                           <CardHeader className="gap-0">
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
+                            <div className="flex flex-col items-start justify-between gap-3 sm:flex-row">
+                              <div className="min-w-0">
                                 <CardDescription>
                                   01 / Understand the exception
                                 </CardDescription>
@@ -3007,9 +2743,6 @@ function App() {
                                 </CardDescription>
                                 <CardTitle>Decision and action audit</CardTitle>
                               </div>
-                              <Button variant="outline" size="sm">
-                                Export JSON
-                              </Button>
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-3">
@@ -3072,220 +2805,6 @@ function App() {
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>
-  );
-}
-
-function LocationField({
-  id,
-  label,
-  placeholder,
-  value,
-  suggestions,
-  open,
-  onFocus,
-  onChange,
-  onSelect,
-}: {
-  id: string;
-  label: string;
-  placeholder: string;
-  value: string;
-  suggestions: string[];
-  open: boolean;
-  onFocus: () => void;
-  onChange: (value: string) => void;
-  onSelect: (value: string) => void;
-}) {
-  return (
-    <div data-location-autocomplete className="relative grid gap-2">
-      <label htmlFor={id} className="text-sm font-medium">
-        {label}
-      </label>
-      <Input
-        id={id}
-        placeholder={placeholder}
-        value={value}
-        onFocus={onFocus}
-        onChange={(event) => onChange(event.target.value)}
-        autoComplete="off"
-      />
-      {open && suggestions.length > 0 && (
-        <div className="absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-xl border bg-popover p-1 text-popover-foreground shadow-md">
-          <p className="px-3 py-2 text-xs text-muted-foreground">
-            Suggested locations
-          </p>
-          {suggestions.map((suggestion) => (
-            <button
-              key={suggestion}
-              type="button"
-              className="flex w-full rounded-lg px-3 py-2 text-left text-sm outline-none hover:bg-accent hover:text-accent-foreground"
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={() => onSelect(suggestion)}
-            >
-              {suggestion}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function MetricStrip({ cases }: { cases: ExceptionCase[] }) {
-  const activeCases = cases.filter((item) => item.status !== "closed");
-  const metrics = [
-    {
-      label: "Open exceptions",
-      value: activeCases.length.toString(),
-      detail: "Across active shipments",
-      icon: (
-        <HugeiconsIcon
-          icon={PackageSearchIcon}
-          className="size-4"
-          strokeWidth={2}
-        />
-      ),
-    },
-    {
-      label: "Critical",
-      value: "1",
-      detail: "Needs attention",
-      icon: (
-        <HugeiconsIcon
-          icon={AlertCircleIcon}
-          className="size-4"
-          strokeWidth={2}
-        />
-      ),
-      tone: "text-destructive",
-    },
-    {
-      label: "At-risk value",
-      value: "$184k",
-      detail: "Across 4 shipments",
-      icon: (
-        <HugeiconsIcon
-          icon={ShieldCheckIcon}
-          className="size-4"
-          strokeWidth={2}
-        />
-      ),
-    },
-    {
-      label: "Median response",
-      value: "8m",
-      detail: "18% faster this week",
-      icon: (
-        <HugeiconsIcon icon={Clock01Icon} className="size-4" strokeWidth={2} />
-      ),
-    },
-  ];
-
-  return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {metrics.map((metric) => (
-        <div key={metric.label} className="rounded-xl border bg-background p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-              {metric.icon}
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-baseline gap-2">
-                <p
-                  className={`text-2xl font-semibold tracking-tight ${metric.tone ?? ""}`}
-                >
-                  {metric.value}
-                </p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {metric.label}
-                </p>
-              </div>
-              <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                {metric.detail}
-              </p>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function AssessmentReasoningDialog({ detail }: { detail: ScenarioDetail }) {
-  return (
-    <AlertDialog>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 shrink-0 rounded-full text-muted-foreground hover:text-foreground"
-              aria-label="How was this determined?"
-            >
-              <HugeiconsIcon
-                icon={InformationCircleIcon}
-                className="size-4"
-                strokeWidth={2}
-              />
-            </Button>
-          </AlertDialogTrigger>
-        </TooltipTrigger>
-        <TooltipContent>How was this determined?</TooltipContent>
-      </Tooltip>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogDescription>Reasoning trace</AlertDialogDescription>
-          <AlertDialogTitle>Why this exception is prioritized</AlertDialogTitle>
-          <AlertDialogDescription>
-            The assessment joins operational events, service commitments, and
-            historical context. It separates verified events from AI inference
-            and open data.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <div className="space-y-3 rounded-lg bg-muted p-4 text-sm">
-          <p className="font-medium">Current support</p>
-          <p className="text-muted-foreground">
-            {detail.sources} verified sources support this assessment.
-            Confidence is {detail.confidence}; it is not a guarantee.
-          </p>
-          <p className="text-muted-foreground">
-            <span className="font-medium text-foreground">
-              Open information:
-            </span>{" "}
-            {detail.gap}
-          </p>
-        </div>
-        <AlertDialogFooter>
-          <AlertDialogAction>Done</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-}
-
-function Insight({
-  icon,
-  label,
-  type,
-  text,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  type: string;
-  text: string;
-}) {
-  return (
-    <div className="rounded-lg border bg-card p-4">
-      <div className="flex items-center gap-2 text-sm font-medium [&>svg]:size-5 [&>svg]:shrink-0 [&>svg]:stroke-[1.75]">
-        {icon}
-        <span>{label}</span>
-                                  <Badge variant="outline" className="ml-auto text-xs">
-          {type}
-        </Badge>
-      </div>
-      <p className="mt-3 text-sm leading-6 text-muted-foreground">{text}</p>
-    </div>
   );
 }
 
