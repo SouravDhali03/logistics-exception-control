@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import {
   Activity01Icon,
@@ -62,16 +62,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { InlineEmptyState } from "@/components/inline-empty-state";
+import { ExceptionCreationDialog } from "@/components/exception-creation-dialog";
+import { ExceptionDetailsSheet } from "@/components/exception-details-sheet";
 import { MetricStrip } from "@/components/metric-strip";
 import { AssessmentReasoningDialog } from "@/components/assessment-reasoning-dialog";
 import { Insight } from "@/components/insight";
 import { ComingSoonPage } from "@/components/coming-soon-page";
-import { LocationField } from "@/components/location-field";
-import { RouteMapDialog } from "@/components/route-map-dialog";
 import {
+  routeLocationOptions,
   resolveRouteData,
   routeModeIcon,
-  type RouteMapData,
+  type RouteMode,
 } from "@/components/route-map-data";
 import { Input } from "@/components/ui/input";
 import {
@@ -82,15 +83,12 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
-  Sheet,
-  SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ResponsiveDataTable, type ResponsiveTableColumn } from "@/components/responsive-data-table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
+import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
   TooltipContent,
@@ -105,62 +103,28 @@ import {
 } from "@/components/ui/sidebar";
 
 
-type Priority = "P1" | "P2" | "P3";
-type ImpactSummary = {
-  headline: string;
-  detail?: string;
-};
-type ConfidenceSummary = {
-  level: "confirmed" | "likely" | "possible" | "unknown";
-  score?: number;
-};
-type ExceptionCase = {
-  id: string;
-  priority: Priority;
-  title: string;
-  route: RouteMapData;
-  detail: string;
-  impact: ImpactSummary;
-  time: string;
-  owner: string;
-  confidence: ConfidenceSummary;
-  status?: ResolutionStage;
-  approvedActionId?: string;
-  activityAt?: number;
-  snoozedUntil?: number;
-};
+import {
+  assignmentOptions,
+  confidenceText,
+  impactText,
+  initialCases,
+  routeDisplayFor,
+  type AuditEntry,
+  type ExceptionCase,
+  type Priority,
+  type ResolutionStage,
+  type QueueStatusFilter,
+  type ScenarioDetail,
+} from "@/app-model";
+import { Textarea } from "@/components/ui/textarea";
+import { useInboxState } from "@/hooks/use-inbox-state";
+import { useResolutionState } from "@/hooks/use-resolution-state";
 
-type ExceptionCaseInput = Omit<ExceptionCase, "route"> & { route: string };
-
-type RouteDisplay = {
-  from: string;
-  to: string;
-  data: RouteMapData;
-};
-
-const confidenceText = ({ level, score }: ConfidenceSummary) => {
-  const label = level[0].toUpperCase() + level.slice(1);
-  return score === undefined ? label : `${label} · ${score}%`;
-};
-
-const routeDisplayFor = (item: Pick<ExceptionCase, "route">): RouteDisplay => ({
-  from: item.route.from.country,
-  to: item.route.to.country,
-  data: item.route,
-});
-
-const normalizeExceptionCase = (item: ExceptionCaseInput): ExceptionCase => {
-  return {
-    ...item,
-    route: resolveRouteData(item.id, item.route),
-  };
-};
-type ResolutionStage =
-  | "awaiting"
-  | "awaiting-signoff"
-  | "in-progress"
-  | "ready"
-  | "closed";
+const RouteMapDialog = lazy(() =>
+  import("@/components/route-map-dialog").then(({ RouteMapDialog: Dialog }) => ({
+    default: Dialog,
+  })),
+);
 
 type WorkspaceSection =
   | "inbox"
@@ -205,161 +169,6 @@ const workspaceSectionMeta: Record<
     icon: Settings05Icon,
   },
 };
-
-type ScenarioAction = {
-  id: string;
-  name: string;
-  description: string;
-  recovery: string;
-  cost: number;
-  sla: string;
-  risk: string;
-  dependencies: Array<["verified" | "gap" | "inference", string]>;
-  note: string;
-};
-
-type ScenarioDetail = {
-  what: string;
-  cause: string;
-  impact: string;
-  gap: string;
-  confidence: string;
-  sources: string;
-  actions: ScenarioAction[];
-  audit: Array<[string, string, string]>;
-};
-type AuditEntry = [string, string, string];
-
-const initialCaseInputs: ExceptionCaseInput[] = [
-  {
-    id: "EXC-2457",
-    priority: "P2",
-    title: "Reefer power interruption detected",
-    route: "Kobe → Rotterdam",
-    detail: "Cold-chain telemetry dropped for 18 min",
-    impact: { headline: "Product integrity at risk", detail: "$28k load" },
-    time: "18m",
-    owner: "You",
-    confidence: { level: "possible", score: 72 },
-  },
-  {
-    id: "EXC-2481",
-    priority: "P1",
-    title: "Port congestion threatens delivery",
-    route: "Rotterdam → Chicago",
-    detail: "31h predicted delay · $42k at risk",
-    impact: { headline: "Late by 25–37h", detail: "$42k at risk" },
-    time: "2m",
-    owner: "You",
-    confidence: { level: "likely", score: 82 },
-  },
-  {
-    id: "EXC-2479",
-    priority: "P2",
-    title: "Temperature excursion detected",
-    route: "Singapore → Frankfurt",
-    detail: "8.4°C for 22 min · Pharma",
-    impact: { headline: "Quality release at risk", detail: "Pharma load" },
-    time: "11m",
-    owner: "Mina",
-    confidence: { level: "confirmed" },
-  },
-  {
-    id: "EXC-2476",
-    priority: "P2",
-    title: "Customs documents incomplete",
-    route: "Dhaka → Toronto",
-    detail: "Commercial invoice mismatch",
-    impact: { headline: "Late by 5–6 days" },
-    time: "26m",
-    owner: "You",
-    confidence: { level: "possible", score: 64 },
-  },
-  {
-    id: "EXC-2471",
-    priority: "P3",
-    title: "Tracking signal stale",
-    route: "Shenzhen → Long Beach",
-    detail: "No carrier event for 9h",
-    impact: { headline: "Up to 15h late" },
-    time: "1h",
-    owner: "Unassigned",
-    confidence: { level: "unknown" },
-  },
-  {
-    id: "EXC-2468",
-    priority: "P3",
-    title: "Warehouse handoff delayed",
-    route: "Hamburg → Prague",
-    detail: "Pickup missed by 46 min",
-    impact: { headline: "Up to 8h late", detail: "$4k penalty" },
-    time: "2h",
-    owner: "Nadia",
-    confidence: { level: "likely", score: 71 },
-  },
-  {
-    id: "EXC-2464",
-    priority: "P3",
-    title: "Delivery appointment at risk",
-    route: "Antwerp → Lyon",
-    detail: "Driver hours limit approaching",
-    impact: { headline: "At risk", detail: "2h of slack left" },
-    time: "3h",
-    owner: "You",
-    confidence: { level: "possible", score: 58 },
-  },
-  {
-    id: "EXC-2461",
-    priority: "P2",
-    title: "Container release delayed",
-    route: "Busan → Seattle",
-    detail: "Customs release pending for 6h",
-    impact: { headline: "Up to 8h late" },
-    time: "4h",
-    owner: "Mina",
-    confidence: { level: "possible", score: 61 },
-  },
-  {
-    id: "EXC-2459",
-    priority: "P3",
-    title: "Proof of delivery missing",
-    route: "Paris → Madrid",
-    detail: "Signed receipt not uploaded",
-    impact: { headline: "Proof required before release" },
-    time: "5h",
-    owner: "Unassigned",
-    confidence: { level: "unknown" },
-  },
-  {
-    id: "EXC-2458",
-    priority: "P2",
-    title: "Carrier capacity reduced",
-    route: "Los Angeles → Dallas",
-    detail: "Two booked trailers cancelled",
-    impact: { headline: "Up to 8h late", detail: "$4k penalty" },
-    time: "6h",
-    owner: "You",
-    confidence: { level: "likely", score: 74 },
-  },
-  {
-    id: "EXC-2456",
-    priority: "P3",
-    title: "Temperature logger offline",
-    route: "Osaka → Vancouver",
-    detail: "No telemetry received for 3h",
-    impact: { headline: "No reliable ETA" },
-    time: "7h",
-    owner: "Nadia",
-    confidence: { level: "possible", score: 55 },
-  },
-];
-
-const initialCases: ExceptionCase[] = initialCaseInputs.map(normalizeExceptionCase);
-
-const assignmentOptions = ["You", "Mina", "Nadia", "Unassigned"] as const;
-
-const impactText = (impact: ImpactSummary) =>
-  [impact.headline, impact.detail].filter(Boolean).join(" · ");
 
 const scenarioDetails: Record<string, ScenarioDetail> = {
   "EXC-2457": {
@@ -711,7 +520,6 @@ const priorityLabel: Record<Priority, string> = {
   P2: "High",
   P3: "Medium",
 };
-type QueueStatusFilter = "active" | "all" | "resolved";
 const statusLabel: Record<ResolutionStage, string> = {
   awaiting: "Needs decision",
   "awaiting-signoff": "Awaiting sign-off",
@@ -777,41 +585,52 @@ function App() {
   }, []);
   const [cases, setCases] = useState<ExceptionCase[]>(initialCases);
   const [selectedId, setSelectedId] = useState("EXC-2481");
-  const [priorityFilter, setPriorityFilter] = useState<Priority | "all">("all");
-  const [statusFilter, setStatusFilter] =
-    useState<QueueStatusFilter>("active");
   const [statusFilterOpen, setStatusFilterOpen] = useState(true);
   const [priorityFilterOpen, setPriorityFilterOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [page, setPage] = useState(1);
+  const {
+    priorityFilter,
+    setPriorityFilter,
+    statusFilter,
+    setStatusFilter,
+    searchQuery,
+    setSearchQuery,
+    setPage,
+    visibleCases,
+    pageSize,
+    pageCount,
+    activePage,
+    items: paginatedCases,
+  } = useInboxState(cases);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [newExceptionOpen, setNewExceptionOpen] = useState(false);
   const [newPriority, setNewPriority] = useState<Priority>("P2");
   const [newTitle, setNewTitle] = useState("");
   const [newFrom, setNewFrom] = useState("");
   const [newTo, setNewTo] = useState("");
+  const [newRouteMode, setNewRouteMode] = useState<RouteMode>("road");
   const [newImpact, setNewImpact] = useState("");
   const [locationField, setLocationField] = useState<"from" | "to" | null>(
     null,
   );
-  const [resolutionStage, setResolutionStage] =
-    useState<ResolutionStage>("awaiting");
-  const [activeTab, setActiveTab] = useState("decision");
-  const [approvedActionId, setApprovedActionId] = useState<string | null>(
-    null,
-  );
-  const [isResolving, setIsResolving] = useState(false);
-  const [closureOpen, setClosureOpen] = useState(false);
-  const [closureCriteria, setClosureCriteria] = useState({
-    milestone: false,
-    action: false,
-    risk: false,
-    alerts: false,
-  });
-  const [overrideReason, setOverrideReason] = useState(
-    "Customer relationship or operational context changes the preferred response.",
-  );
-  const [signoffAcknowledged, setSignoffAcknowledged] = useState(false);
+  const {
+    resolutionStage,
+    setResolutionStage,
+    activeTab,
+    setActiveTab,
+    approvedActionId,
+    setApprovedActionId,
+    isResolving,
+    setIsResolving,
+    closureOpen,
+    setClosureOpen,
+    closureCriteria,
+    setClosureCriteria,
+    overrideReason,
+    setOverrideReason,
+    signoffAcknowledged,
+    setSignoffAcknowledged,
+    resetResolution,
+  } = useResolutionState();
   const [copiedExceptionId, setCopiedExceptionId] = useState<string | null>(
     null,
   );
@@ -827,7 +646,7 @@ function App() {
     handleHashChange();
     window.addEventListener("hashchange", handleHashChange);
     return () => window.removeEventListener("hashchange", handleHashChange);
-  }, []);
+  }, [setClosureOpen]);
   const selected =
     cases.find((item) => item.id === selectedId) ?? cases[0] ?? initialCases[0];
   const selectedRoute = routeDisplayFor(selected);
@@ -842,22 +661,6 @@ function App() {
   const approvedAction = detail.actions.find(
     (action) => action.id === approvedActionId,
   );
-  const resetResolution = (
-    nextStage: ResolutionStage = "awaiting",
-    nextActionId: string | null = null,
-  ) => {
-    setIsResolving(false);
-    setResolutionStage(nextStage);
-    setApprovedActionId(nextActionId);
-    setActiveTab("decision");
-    setClosureOpen(false);
-    setClosureCriteria({
-      milestone: false,
-      action: false,
-      risk: false,
-      alerts: false,
-    });
-  };
   const startResolution = (actionId: string, requiresSignoff = false) => {
     const actionName =
       detail.actions.find((action) => action.id === actionId)?.name ?? actionId;
@@ -991,60 +794,11 @@ function App() {
       [caseId]: [...(current[caseId] ?? []), [time, label, actor]],
     }));
   };
-  const visibleCases = useMemo(
-    () =>
-      cases
-        .filter((item) => {
-          const query = searchQuery.trim().toLowerCase();
-          const matchesSearch =
-            !query ||
-            [
-              item.id,
-              item.title,
-              item.detail,
-              `${routeDisplayFor(item).from} ${routeDisplayFor(item).to}`,
-              impactText(item.impact),
-              item.owner,
-            ].some((value) => value.toLowerCase().includes(query));
-          return (
-            matchesSearch &&
-            (statusFilter === "all" ||
-              (statusFilter === "active" &&
-                item.status !== "closed" &&
-                (!item.snoozedUntil || item.snoozedUntil <= Date.now())) ||
-              (statusFilter === "resolved" && item.status === "closed")) &&
-            (priorityFilter === "all" || item.priority === priorityFilter)
-          );
-        })
-        .sort((a, b) => {
-          const aClosed = a.status === "closed";
-          const bClosed = b.status === "closed";
-          if (aClosed !== bClosed) return aClosed ? 1 : -1;
-          if (aClosed && bClosed)
-            return (b.activityAt ?? 0) - (a.activityAt ?? 0);
-          return a.priority.localeCompare(b.priority);
-        }),
-    [cases, priorityFilter, searchQuery, statusFilter],
-  );
-  const pageSize = 10;
-  const pageCount = Math.max(1, Math.ceil(visibleCases.length / pageSize));
-  const activePage = Math.min(page, pageCount);
-  const paginatedCases = visibleCases.slice(
-    (activePage - 1) * pageSize,
-    activePage * pageSize,
-  );
   const locations = Array.from(
     new Set([
-      "Delhi",
-      "Mumbai",
-      "Bengaluru",
-      "Singapore",
-      "Dubai",
-      "London",
-      "New York",
+      ...routeLocationOptions,
       ...cases.flatMap((item) => {
-        const route = routeDisplayFor(item);
-        return [route.from, route.to];
+        return [item.route.from.label, item.route.to.label];
       }),
     ]),
   );
@@ -1069,6 +823,7 @@ function App() {
     setNewTitle("");
     setNewFrom("");
     setNewTo("");
+    setNewRouteMode("road");
     setNewImpact("");
     setNewPriority("P2");
     setLocationField(null);
@@ -1083,7 +838,7 @@ function App() {
       id,
       priority: newPriority,
       title,
-      route: resolveRouteData(id, `${from} → ${to}`),
+      route: resolveRouteData(id, `${from} → ${to}`, newRouteMode),
       detail: newImpact.trim() || "Impact assessment pending",
       impact: { headline: newImpact.trim() || "Impact assessment pending" },
       time: "now",
@@ -1464,135 +1219,32 @@ function App() {
                 />
               )}
             </main>
-            <AlertDialog
+            <ExceptionCreationDialog
               open={newExceptionOpen}
               onOpenChange={setNewExceptionOpen}
+              title={newTitle}
+              onTitleChange={setNewTitle}
+              from={newFrom}
+              onFromChange={setNewFrom}
+              to={newTo}
+              onToChange={setNewTo}
+              routeMode={newRouteMode}
+              onRouteModeChange={setNewRouteMode}
+              impact={newImpact}
+              onImpactChange={setNewImpact}
+              priority={newPriority}
+              onPriorityChange={setNewPriority}
+              suggestions={locationSuggestions}
+              locationField={locationField}
+              onLocationFieldChange={setLocationField}
+              onCreate={createException}
+            />
+            <ExceptionDetailsSheet
+              open={drawerOpen}
+              onOpenChange={setDrawerOpen}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
             >
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>New exception</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Create a new logistics exception for the operations queue.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <div className="grid gap-4 py-2">
-                  <div className="grid gap-2">
-                    <label
-                      htmlFor="exception-title"
-                      className="text-sm font-medium"
-                    >
-                      Exception title
-                    </label>
-                    <Input
-                      id="exception-title"
-                      placeholder="Describe the exception"
-                      value={newTitle}
-                      onChange={(event) => setNewTitle(event.target.value)}
-                    />
-                  </div>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <LocationField
-                      id="exception-from"
-                      label="From"
-                      placeholder="Origin location"
-                      value={newFrom}
-                      suggestions={locationSuggestions}
-                      open={locationField === "from"}
-                      onFocus={() => setLocationField("from")}
-                      onChange={setNewFrom}
-                      onSelect={(value) => {
-                        setNewFrom(value);
-                        setLocationField(null);
-                      }}
-                    />
-                    <LocationField
-                      id="exception-to"
-                      label="To"
-                      placeholder="Destination location"
-                      value={newTo}
-                      suggestions={locationSuggestions}
-                      open={locationField === "to"}
-                      onFocus={() => setLocationField("to")}
-                      onChange={setNewTo}
-                      onSelect={(value) => {
-                        setNewTo(value);
-                        setLocationField(null);
-                      }}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <label
-                      htmlFor="exception-impact"
-                      className="text-sm font-medium"
-                    >
-                      Impact summary
-                    </label>
-                    <Textarea
-                      id="exception-impact"
-                      placeholder="Describe the operational impact"
-                      value={newImpact}
-                      onChange={(event) => setNewImpact(event.target.value)}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <label className="text-sm font-medium">Priority</label>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="justify-between"
-                          aria-label="Select priority"
-                        >
-                          <span>{priorityLabel[newPriority]}</span>
-                          <HugeiconsIcon
-                            icon={UnfoldMoreIcon}
-                            className="size-4 text-muted-foreground"
-                            strokeWidth={2}
-                          />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="start"
-                        className="w-(--radix-dropdown-menu-trigger-width)"
-                      >
-                        <DropdownMenuLabel>
-                          Exception priority
-                        </DropdownMenuLabel>
-                        <DropdownMenuRadioGroup
-                          value={newPriority}
-                          onValueChange={(value) =>
-                            setNewPriority(value as Priority)
-                          }
-                        >
-                          <DropdownMenuRadioItem value="P1">
-                            Critical
-                          </DropdownMenuRadioItem>
-                          <DropdownMenuRadioItem value="P2">
-                            High
-                          </DropdownMenuRadioItem>
-                          <DropdownMenuRadioItem value="P3">
-                            Medium
-                          </DropdownMenuRadioItem>
-                        </DropdownMenuRadioGroup>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={createException}>
-                    Create exception
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-            <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
-              <SheetContent className="flex w-full! max-w-[100vw] min-w-0 flex-col gap-0 p-0 sm:max-w-2xl">
-                <Tabs
-                  value={activeTab}
-                  onValueChange={setActiveTab}
-                  className="flex min-h-0 flex-1 flex-col"
-                >
                   <SheetHeader className="gap-0 border-b border-border/70 p-0">
                     <div className="flex min-w-0 items-start justify-between gap-4 px-4 pt-4 pb-4 sm:px-6 sm:pt-6 sm:pb-5">
                       <div className="min-w-0 pr-9 sm:pr-10">
@@ -1646,10 +1298,20 @@ function App() {
                             </Tooltip>
                           </span>
                           <span aria-hidden="true">·</span>
-                          <RouteMapDialog
-                            selectedId={selected.id}
-                            routeData={selectedRouteData}
-                          />
+                          {drawerOpen ? (
+                            <Suspense
+                              fallback={
+                                <span className="text-sm text-muted-foreground">
+                                  Loading route…
+                                </span>
+                              }
+                            >
+                              <RouteMapDialog
+                                selectedId={selected.id}
+                                routeData={selectedRouteData}
+                              />
+                            </Suspense>
+                          ) : null}
                         </div>
                         <div className="mt-3 flex items-center gap-3">
                           <span className="text-sm text-muted-foreground">
@@ -1941,6 +1603,7 @@ function App() {
                               type="single"
                               collapsible
                               defaultValue={detail.actions[0]?.id}
+                              className="gap-2 overflow-visible rounded-none border-0 bg-transparent sm:gap-0 sm:overflow-hidden sm:rounded-2xl sm:border sm:bg-card"
                             >
                               {detail.actions.map((action, index) => {
                                 const key = action.id;
@@ -1957,8 +1620,12 @@ function App() {
                                   ([kind]) => kind === "gap",
                                 );
                                 return (
-                                  <AccordionItem key={key} value={key}>
-                                    <AccordionTrigger className="p-4">
+                                  <AccordionItem
+                                    key={key}
+                                    value={key}
+                                    className="rounded-xl border bg-card data-open:border-primary/30 data-open:ring-1 data-open:ring-primary/10 not-last:border-b sm:rounded-none sm:border-0 sm:data-open:border-0 sm:data-open:ring-0 sm:not-last:border-b"
+                                  >
+                                    <AccordionTrigger className="p-3 sm:p-4 [&>[data-slot=accordion-trigger-icon]]:hidden sm:[&>[data-slot=accordion-trigger-icon]]:block">
                                       <div className="grid min-w-0 flex-1 grid-cols-1 items-center gap-3 pr-0 sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-1">
                                         <div className="min-w-0">
                                           <p className="text-base font-medium break-words sm:whitespace-nowrap">
@@ -1976,20 +1643,21 @@ function App() {
                                             </p>
                                           )}
                                         </div>
-                                        <div className="flex items-center justify-self-end gap-3 whitespace-nowrap">
-                                          <p className="text-sm text-muted-foreground">
+                                        <div className="grid grid-cols-3 gap-2 justify-self-stretch sm:flex sm:items-center sm:justify-self-end sm:gap-3 sm:whitespace-nowrap">
+                                          <p className="text-xs text-muted-foreground sm:text-sm">
                                             <span className="font-semibold text-foreground">
                                               {recovery}
                                             </span>{" "}
-                                            recovery
+                                            <span className="block sm:inline">recovery</span>
                                           </p>
-                                          <p className="text-sm text-muted-foreground">
+                                          <p className="text-xs text-muted-foreground sm:text-sm">
                                             <span className="font-semibold text-foreground">
                                               {cost}
                                             </span>{" "}
-                                            cost
+                                            <span className="block sm:inline">cost</span>
                                           </p>
                                           <Badge
+                                            className="justify-self-start text-xs sm:justify-self-auto"
                                             variant={
                                               index === 0
                                                 ? "secondary"
@@ -2040,7 +1708,7 @@ function App() {
                                           </div>
                                         ) : (
                                           <>
-                                        <div className="flex items-start justify-between gap-4">
+                                        <div className="flex flex-col items-start gap-3 sm:flex-row sm:justify-between sm:gap-4">
                                           <div className="min-w-0">
                                             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                                               Selected response
@@ -2052,7 +1720,7 @@ function App() {
                                               {action.description}
                                             </p>
                                           </div>
-                                          <div className="shrink-0 text-right">
+                                          <div className="shrink-0 text-left sm:text-right">
                                             <p className="text-2xl font-semibold">
                                               {saved}
                                             </p>
@@ -2063,7 +1731,7 @@ function App() {
                                         </div>
                                         <div
                                           role="status"
-                                          className="mt-4 flex items-center justify-between gap-3 rounded-lg border border-border bg-muted p-3 text-xs text-muted-foreground"
+                                          className="mt-4 flex flex-col items-start gap-2 rounded-lg border border-border bg-muted p-3 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:gap-3"
                                         >
                                           <div className="flex items-center gap-2">
                                             <AlertCircle className="size-4 shrink-0" />
@@ -2200,10 +1868,10 @@ function App() {
                                               </p>
                                             </div>
                                           </div>
-                                          <div className="flex justify-end gap-2">
+                                          <div className="flex flex-col justify-end gap-2 sm:flex-row">
                                             <AlertDialog>
                                               <AlertDialogTrigger asChild>
-                                                <Button variant="outline">
+                                                <Button variant="outline" className="w-full sm:w-auto">
                                                   Override AI
                                                 </Button>
                                               </AlertDialogTrigger>
@@ -2262,6 +1930,7 @@ function App() {
                                             <AlertDialog>
                                               <AlertDialogTrigger asChild>
                                                 <Button
+                                                  className="w-full sm:w-auto"
                                                   onClick={() =>
                                                     setSignoffAcknowledged(
                                                       false,
@@ -2753,10 +2422,10 @@ function App() {
 
                                   return (
                                     <div
-                                      className="flex min-h-20 items-center gap-4 px-4 py-3"
+                                      className="grid min-h-20 grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-3 px-3 py-3 sm:flex sm:items-center sm:gap-4 sm:px-4"
                                       key={`${time}-${label}`}
                                     >
-                                      <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border bg-background shadow-sm">
+                                      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border bg-background shadow-sm sm:size-12">
                                         <HugeiconsIcon
                                           icon={auditIcon}
                                           className="size-5 text-foreground"
@@ -2772,7 +2441,7 @@ function App() {
                                           Recorded at {time}
                                         </p>
                                       </div>
-                                      <code className="shrink-0 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+                                      <code className="col-start-2 max-w-full justify-self-start break-all rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground sm:col-auto sm:ml-auto sm:shrink-0 sm:break-normal sm:whitespace-nowrap">
                                         {actor}
                                       </code>
                                     </div>
@@ -2798,9 +2467,7 @@ function App() {
                       </TabsContent>
                     </div>
                   </ScrollArea>
-                </Tabs>
-              </SheetContent>
-            </Sheet>
+                </ExceptionDetailsSheet>
           </div>
         </SidebarInset>
       </SidebarProvider>

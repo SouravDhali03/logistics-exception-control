@@ -72,6 +72,16 @@ const buildFallbackRoute = (route: RouteMapData): [number, number][] => {
   });
 };
 
+const getRouteProgressPoint = (
+  coordinates: [number, number][],
+  progress: number,
+): MapCoordinate => {
+  const [longitude, latitude] =
+    coordinates[Math.floor((coordinates.length - 1) * progress)] ?? coordinates[0];
+
+  return { latitude, longitude };
+};
+
 export function RouteMapDialog({
   selectedId,
   routeData,
@@ -117,8 +127,7 @@ export function RouteMapDialog({
       });
       mapRef.current = map;
       const routeColor = getThemePrimaryColor();
-      const currentRoutePoint = routeCoordinates[Math.floor((routeCoordinates.length - 1) * currentProgress)];
-      const current = { latitude: currentRoutePoint[1], longitude: currentRoutePoint[0] };
+      let current = getRouteProgressPoint(routeCoordinates, currentProgress);
 
       const fitRoute = () => {
         const bounds = new LngLatBounds();
@@ -187,6 +196,7 @@ export function RouteMapDialog({
               const roadGeometry = payload?.routes?.[0]?.geometry?.coordinates;
               if (!roadGeometry?.length || !mapRef.current) return;
               routeCoordinates = roadGeometry;
+              current = getRouteProgressPoint(routeCoordinates, currentProgress);
               const source = mapRef.current.getSource("exception-route") as GeoJSONSource | undefined;
               source?.setData({ type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: roadGeometry } });
               fitRoute();
@@ -250,9 +260,9 @@ export function RouteMapDialog({
             <HugeiconsIcon icon={Navigation03Icon} className="size-4 text-primary transition-colors group-hover:text-primary/80" strokeWidth={2.5} aria-hidden="true" />
           </span>
           <span className="text-base font-semibold text-primary transition-colors group-hover:text-primary/80">Route</span>
-          <span className="ml-1 text-foreground">{mapRoute.from.country}</span>
+          <span className="ml-1 text-foreground">{mapRoute.from.label}</span>
           <HugeiconsIcon icon={ArrowRight01Icon} className="size-4 shrink-0 text-muted-foreground" strokeWidth={2} aria-hidden="true" />
-          <span className="text-foreground">{mapRoute.to.country}</span>
+          <span className="text-foreground">{mapRoute.to.label}</span>
         </button>
       </DialogTrigger>
       <DialogContent forceMount className="max-w-5xl">
@@ -296,7 +306,7 @@ export function RouteMapDialog({
             <Separator />
             <div className="flex items-center gap-3"><div className="flex size-9 items-center justify-center rounded-lg bg-muted"><HugeiconsIcon icon={routeModeIcon[mode]} className="size-5" strokeWidth={2} /></div><div><p className="text-sm font-medium">{routeModeLabel[mode]}</p><p className="text-xs text-muted-foreground">{selectedId} shipment</p></div></div>
             <div className="grid grid-cols-2 gap-4 text-sm"><div><p className="text-muted-foreground">Current location</p><p className="mt-1 font-medium">Mid-route</p></div><div><p className="text-muted-foreground">ETA</p><p className="mt-1 whitespace-nowrap font-medium">Tomorrow · 08:40</p></div></div>
-            <div><p className="text-sm text-muted-foreground">Route progress</p><div className="mt-2 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full w-[52%] rounded-full bg-primary" /></div><div className="mt-1 flex justify-between text-xs text-muted-foreground"><span>{mapRoute.from.country}</span><span>52%</span><span>{mapRoute.to.country}</span></div></div>
+            <div><p className="text-sm text-muted-foreground">Route progress</p><div className="mt-2 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full w-[52%] rounded-full bg-primary" /></div><div className="mt-1 flex justify-between gap-2 text-xs text-muted-foreground"><span className="min-w-0 truncate">{mapRoute.from.label}</span><span>52%</span><span className="min-w-0 truncate text-right">{mapRoute.to.label}</span></div></div>
           </div>
         </div>
       </DialogContent>
